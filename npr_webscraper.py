@@ -2,11 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def scrape(url):
+def scrape(url, write=False):
     """
     Takes a URL for an NPR article and returns the text and images.
     :param url: NPR article link
     :type url: str
+    :param write: If true, writes the article text to a file
+    :type write: bool
     :return: List of text elements in body and list of image links
     :rtype: ([bs4.element.Tag], [str]))
     """
@@ -29,13 +31,21 @@ def scrape(url):
             element_images = [img['data-original'] for img in element_images]
             images += element_images
 
+    raw_text = '\n'.join([tag.text.strip() for tag in text_elements])
+
     output_dict = {
                    'Title': title,
                    'Author': author,
                    'Text Elements': text_elements,
-                   'Raw Text': '\n'.join([tag.text.strip() for tag in text_elements]),
+                   'Raw Text': raw_text,
                    'Images': images
                    }
+
+    if write:
+        modified_title = '-'.join(title.lower().split(' '))
+        with open(f'scraped-text/{modified_title}', 'w') as f:
+            f.write(raw_text)
+
     return output_dict
 
 
