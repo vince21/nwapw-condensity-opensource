@@ -19,7 +19,6 @@ class WordDataFrame:
         return tagged
 
 
-
     def __init__(self, text):
         sentenceData = []
 

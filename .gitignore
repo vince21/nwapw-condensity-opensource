@@ -1,1 +1,6 @@
 /venv
+
+# Mac Files
+.DS_Store
+.AppleDouble
+.LSOverride
