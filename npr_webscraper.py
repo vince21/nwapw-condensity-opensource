@@ -13,6 +13,10 @@ def scrape(url):
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text, 'html.parser')
 
+    title = soup.find('div', class_='storytitle').find('h1').text.strip()
+
+    author = soup.find('a', rel='author').text.strip()
+
     text_elements = []
     images = []
 
@@ -25,21 +29,20 @@ def scrape(url):
             element_images = [img['data-original'] for img in element_images]
             images += element_images
 
-    return text_elements, images
-
-
-def get_text(tags):
-    """
-    Converts a list of tags into a string.
-    :param tags: List of tags to be converted
-    :type tags: [bs4.element.Tag]
-    :return: String containing the text from within each tag
-    :rtype: str
-    """
-    return '\n'.join([tag.text for tag in tags])
+    output_dict = {
+                   'Title': title,
+                   'Author': author,
+                   'Text Elements': text_elements,
+                   'Raw Text': '\n'.join([tag.text.strip() for tag in text_elements]),
+                   'Images': images
+                   }
+    return output_dict
 
 
 if __name__ == '__main__':
     test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
-    print(get_text(scrape(test_url)[0]))
-    print(scrape(test_url)[1])
+    scrape_output = scrape(test_url)
+    print(f'Title: {scrape_output["Title"]}')
+    print(f'Author: {scrape_output["Author"]}')
+    print(f'Raw Text: {scrape_output["Raw Text"]}')
+    print(f'Images: {scrape_output["Images"]}')
