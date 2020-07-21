@@ -2,6 +2,7 @@ import nltk
 from nltk import StanfordTagger
 from nltk import word_tokenize
 from nltk import sent_tokenize
+from nltk.stem import WordNetLemmatizer
 import pandas as pd
 
 
@@ -43,19 +44,12 @@ class WordDataFrame:
                 nouns.append(word[0])
         return nouns
 
-    def create_word_df(self):
-
-        return df
-
-    def create_sentence_df(self):
-        df =
-        return df
-
     '''
         Constructor
         inputs: self, text (.txt file) //TODO: we will want to chance this so that links or raw text can be inputted
     '''
     def __init__(self, text):
+        wnl = WordNetLemmatizer()
         fullText = ""
 
         with open(text) as f:
@@ -65,10 +59,18 @@ class WordDataFrame:
         self.sentences = sent_tokenize(fullText)
 
         wordData = []
+        lemmas = []
         for sentence in self.sentences:
-            wordData.append(word_tokenize(sentence))
+            words = word_tokenize(sentence)
+            wordData.append(words)
+            for word in words:
+                if word not in lemmas:
+                    lemmas.append(wnl.lemmatize(word))
+
+
 
         self.words = wordData
+        self.wordDF = pd.DataFrame(lemmas)
 
         self.sentences_df = pd.DataFrame.from_dict({'sentences': self.sentences})
 
@@ -79,4 +81,6 @@ class WordDataFrame:
 
 obj = WordDataFrame('test.txt')
 
-print(obj.create_sentence_df())
+print(obj.wordDF)
+print(obj.getNounsByRow(10))
+print(obj.getVerbsByRow(10))
