@@ -130,5 +130,5 @@ class WordDataFrame:
 
 obj = WordDataFrame('test.txt')
 
-print(obj.sentences)
-print(obj.condense(0.5))
+#print(obj.sentences)
+print(obj.condense(0.3))
