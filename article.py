@@ -1,4 +1,3 @@
-import pandas as pd
 import nltk
 from nltk import StanfordTagger
 from nltk import word_tokenize
@@ -7,22 +6,13 @@ from nltk import sent_tokenize
 class WordDataFrame:
 
     '''
-        concatenates words from df into a string
-        inputs: self, row number (int)
-        outputs: sentence (string)
-    '''
-    def getSentenceByRow(self, row):
-        return sent_tokenize(self.sentences[row])[0]
-
-
-    '''
         tags words by part of speech
         inputs: self, row number (int)
         outputs:  words and their part of speech (array[tuples])
     '''
     def getTagsByRow(self, row):
 
-        tagged = nltk.pos_tag(nltk.word_tokenize(self.getSentenceByRow(row)))
+        tagged = nltk.pos_tag(nltk.word_tokenize(self.sentences[row]))
         return tagged
 
     '''
