@@ -68,11 +68,11 @@ class WordDataFrame:
         for sentence in self.sentences:
             wordData.append(word_tokenize(sentence))
 
-        self.words = pd.DataFrame(wordData)
+        self.words = wordData
 
 
 obj = WordDataFrame('test.txt')
 
-print(obj.getTagsByRow(10))
+print(obj.words)
 print(obj.getNounsByRow(10))
 print(obj.getVerbsByRow(10))
