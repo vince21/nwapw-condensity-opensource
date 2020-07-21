@@ -5,7 +5,7 @@ from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import pandas as pd
-
+import string
 
 class WordDataFrame:
 
@@ -59,7 +59,10 @@ class WordDataFrame:
         # placeholder
         # should contain algorithm that weights word frequency, etc.
         # should reference self.wordDF
-        return 1
+        if word not in string.punctuation:
+            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
+        else:
+            return 0
 
     def score_sentence(self, sentence):
         """
@@ -124,7 +127,7 @@ class WordDataFrame:
     '''
     # I made a temporary solution to allow for raw text input; but there might be a better/more consistent way —Toby
     def __init__(self, text):
-        wnl = WordNetLemmatizer()
+        self.wnl = WordNetLemmatizer()
         fullText = ""
 
         # check if text is file or not
@@ -144,10 +147,11 @@ class WordDataFrame:
             words = word_tokenize(sentence)
             wordData.append(words)
             for word in words:
-                lemmas.append(wnl.lemmatize(word))
+                lemmas.append(self.wnl.lemmatize(word))
 
         self.words = wordData
-        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(fullText),'Lemmas': lemmas,'Scores': 0})
+        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(fullText),'Lemmas': lemmas})
+        self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
 
         # sentiment analysis for sentences
         sia = SentimentIntensityAnalyzer()
@@ -163,5 +167,4 @@ class WordDataFrame:
 
 obj = WordDataFrame('test.txt')
 
-print(obj.condense(0.1))
-print(obj.wordDF)
+print(obj.condense(0.4))
