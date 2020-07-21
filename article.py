@@ -2,6 +2,7 @@ import pandas as pd
 import nltk
 from nltk import StanfordTagger
 from nltk import word_tokenize
+from nltk import sent_tokenize
 
 class WordDataFrame:
 
@@ -11,11 +12,7 @@ class WordDataFrame:
         outputs: sentence (string)
     '''
     def getSentenceByRow(self, row):
-        sentence = ""
-        for word in self.df.iloc[row]:
-            if not word is None:
-                sentence += str(word) + " "
-        return sentence
+        return sent_tokenize(self.sentences[row])[0]
 
 
     '''
@@ -24,6 +21,7 @@ class WordDataFrame:
         outputs:  words and their part of speech (array[tuples])
     '''
     def getTagsByRow(self, row):
+
         tagged = nltk.pos_tag(nltk.word_tokenize(self.getSentenceByRow(row)))
         return tagged
 
@@ -58,19 +56,23 @@ class WordDataFrame:
         inputs: self, text (.txt file) //TODO: we will want to chance this so that links or raw text can be inputted
     '''
     def __init__(self, text):
-        sentenceData = []
+        fullText = ""
 
         with open(text) as f:
             for line in f:
-                sentenceData.append(line.split('.')[:-1])
+                fullText += line
+
+        self.sentences = sent_tokenize(fullText)
 
         wordData = []
-        for sentence in sentenceData:
-            for words in sentence:
-                wordData.append(words.split(' '))
+        for sentence in self.sentences:
+            wordData.append(word_tokenize(sentence))
 
-        self.df = pd.DataFrame(wordData)
+        self.words = pd.DataFrame(wordData)
+
 
 obj = WordDataFrame('test.txt')
-print(obj.getTagsByRow(3))
-print(obj.getNounsByRow(3))
+
+print(obj.getTagsByRow(10))
+print(obj.getNounsByRow(10))
+print(obj.getVerbsByRow(10))
