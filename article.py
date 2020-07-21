@@ -6,7 +6,7 @@ from nltk import word_tokenize
 class WordDataFrame:
 
     '''
-        concatenates words from df into a strings
+        concatenates words from df into a string
         inputs: self, row number (int)
         outputs: sentence (string)
     '''
@@ -72,5 +72,5 @@ class WordDataFrame:
         self.df = pd.DataFrame(wordData)
 
 obj = WordDataFrame('test.txt')
-#print(obj.getSentenceByRow(2))
+print(obj.getTagsByRow(3))
 print(obj.getNounsByRow(3))
