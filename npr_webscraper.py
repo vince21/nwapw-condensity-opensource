@@ -43,7 +43,7 @@ def scrape(url, write=False):
 
     if write:
         modified_title = '-'.join(title.lower().split(' '))
-        with open(f'scraped-text/{modified_title}', 'w') as f:
+        with open(f'scraped-text/{modified_title}.txt', 'w') as f:
             f.write(raw_text)
 
     return output_dict

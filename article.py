@@ -3,6 +3,7 @@ from nltk import StanfordTagger
 from nltk import word_tokenize
 from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import pandas as pd
 
 
@@ -43,6 +44,16 @@ class WordDataFrame:
             if word[1] == "NN":
                 nouns.append(word[0])
         return nouns
+
+    def get_sentiment(self):
+        """
+        gets the total sentiment of the text
+        :return: tuple containing the average sentiment and the average nonzero sentiment
+        :rtype: (float, float)
+        """
+        total_sentiment = self.sentencesDF['Sentiment'].mean()
+        nonzero_sentiment = self.sentencesDF[self.sentencesDF['Sentiment'] != 0]['Sentiment'].mean()
+        return total_sentiment, nonzero_sentiment
 
     def score_word(self, word):
         # placeholder
@@ -104,11 +115,16 @@ class WordDataFrame:
         wnl = WordNetLemmatizer()
         fullText = ""
 
-        with open(text) as f:
-            for line in f:
-                fullText += line
+        # check if text is file or not
+        if text.split('.')[-1] == 'txt':
+            with open(text) as f:
+                for line in f:
+                    fullText += line
+        else:
+            fullText = text
 
         self.sentences = sent_tokenize(fullText)
+
 
         wordData = []
         lemmas = []
@@ -125,10 +141,20 @@ class WordDataFrame:
         self.words = wordData
         self.wordDF = pd.DataFrame.from_dict({'Words': lemmas, 'Scores': 0})
 
+        # sentiment analysis for sentences
+        sia = SentimentIntensityAnalyzer()
+        sentence_sentiments = [sia.polarity_scores(sentence)['compound'] for sentence in self.sentences]
+        self.sentencesDF = pd.DataFrame.from_dict({'Sentence': self.sentences,
+                                                   'Sentiment': sentence_sentiments
+                                                   })
+
+
+
+
 
 
 
 obj = WordDataFrame('test.txt')
 
-print(obj.sentences)
-print(obj.condense(0.5))
+print(obj.sentencesDF)
+print(obj.get_sentiment())
