@@ -4,6 +4,7 @@ from nltk import word_tokenize
 from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
 import pandas as pd
 import string
 
@@ -59,7 +60,9 @@ class WordDataFrame:
         # placeholder
         # should contain algorithm that weights word frequency, etc.
         # should reference self.wordDF
-        if word not in string.punctuation:
+
+        stop_words = set(stopwords.words('english'))
+        if word not in string.punctuation and word not in stop_words:
             return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
         else:
             return 0
@@ -149,6 +152,7 @@ class WordDataFrame:
             for word in words:
                 lemmas.append(self.wnl.lemmatize(word))
 
+        #scores words
         self.words = wordData
         self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(fullText),'Lemmas': lemmas})
         self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
@@ -167,4 +171,5 @@ class WordDataFrame:
 
 obj = WordDataFrame('test.txt')
 
-print(obj.condense(0.4))
+print(obj.condense(0.3))
+print(obj.wordDF)
