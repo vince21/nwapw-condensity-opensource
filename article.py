@@ -69,11 +69,22 @@ class WordDataFrame:
         :return: score of sentence
         :rtype: float
         """
+        # word score
         words = word_tokenize(sentence)
         score = 0
         for word in words:
             score += self.score_word(word)
         score /= len(words)
+
+        # adding points if sentence matches overall sentiment of text
+
+        # TODO: adjust these values to be reasonable within context of word score (is +0.5 too much/little?)
+        ovr_sentiment = self.get_sentiment()[0]
+        if ovr_sentiment > 0.05 and self.sentencesDF.at[sentence, 'Sentiment'] > 0.4:  # positive
+            score += 0.5
+        elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
+            score += 0.5
+
         return score
 
     def condense(self, percent):
@@ -111,6 +122,7 @@ class WordDataFrame:
         Constructor
         inputs: self, text (.txt file) //TODO: we will want to chance this so that links or raw text can be inputted
     '''
+    # I made a temporary solution to allow for raw text input; but there might be a better/more consistent way —Toby
     def __init__(self, text):
         wnl = WordNetLemmatizer()
         fullText = ""
@@ -137,7 +149,6 @@ class WordDataFrame:
                     lemmas.append(lemma)
 
 
-
         self.words = wordData
         self.wordDF = pd.DataFrame.from_dict({'Words': lemmas, 'Scores': 0})
 
@@ -147,14 +158,12 @@ class WordDataFrame:
         self.sentencesDF = pd.DataFrame.from_dict({'Sentence': self.sentences,
                                                    'Sentiment': sentence_sentiments
                                                    })
-
-
-
+        self.sentencesDF.set_index(self.sentencesDF['Sentence'], inplace=True)
+        del self.sentencesDF['Sentence']
 
 
 
 
 obj = WordDataFrame('test.txt')
 
-print(obj.sentencesDF)
-print(obj.get_sentiment())
+print(obj.condense(0.5))
