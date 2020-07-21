@@ -116,8 +116,9 @@ class WordDataFrame:
             words = word_tokenize(sentence)
             wordData.append(words)
             for word in words:
-                if word not in lemmas:
-                    lemmas.append(wnl.lemmatize(word))
+                lemma = wnl.lemmatize(word)
+                if lemma not in lemmas:
+                    lemmas.append(lemma)
 
 
 
