@@ -7,44 +7,61 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 import pandas as pd
 import string
+from fuzzywuzzy import fuzz
 
 class WordDataFrame:
 
-    '''
-        tags words by part of speech
-        inputs: self, row number (int)
-        outputs:  words and their part of speech (array[tuples])
-    '''
-    def getTagsByRow(self, row):
 
+    def get_tags(self, row):
+        '''
+            tags words by part of speech
+            inputs: self, row number (int)
+            outputs:  words and their part of speech (array[tuples])
+        '''
         tagged = nltk.pos_tag(nltk.word_tokenize(self.sentences[row]))
         return tagged
-
-    '''
-        finds verbs in a sentence
-        inputs: self, row number (int)
-        outputs:  words and their part of speech (array[VERBS])
-    '''
-    def getVerbsByRow(self, row):
+    def get_verbs(self, row):
+        '''
+            finds verbs in a sentence
+            inputs: self, row number (int)
+            outputs:  words and their part of speech (array[VERBS])
+        '''
         verbs = []
         tagged = self.getTagsByRow(row)
         for word in tagged:
             if word[1] == "VB":
                 verbs.append(word[0])
         return verbs
-
-    '''
-        finds nouns in a sentence
-        inputs: self, row number (int)
-        outputs:  words and their part of speech (array[Nouns])
-    '''
-    def getNounsByRow(self, row):
+    def get_nouns(self, row):
+        '''
+            finds nouns in a sentence
+            inputs: self, row number (int)
+            outputs:  words and their part of speech (array[Nouns])
+        '''
         nouns = []
         tagged = self.getTagsByRow(row)
         for word in tagged:
             if word[1] == "NN":
                 nouns.append(word[0])
         return nouns
+
+
+    def get_similarity(self, sentence):
+        """
+        Takes in a sentence and returns how similar it is to another sentence
+        :param sentence: element of self.sentences
+        :type sentence: str
+        :return: score of sentence
+        :rtype: float
+        """
+        scores = []
+        for sim in self.sentences[self.sentences.index(sentence)+1:]:
+            scores.append(fuzz.token_sort_ratio(sim, sentence))
+        #TODO: fix this because it breaks
+        try:
+            return -max(scores)/100
+        except ValueError:
+            return 0
 
     def get_sentiment(self, text):
         """
@@ -56,10 +73,13 @@ class WordDataFrame:
         return (scores['pos']-scores['neg']) / scores['neu']
 
     def score_word(self, word):
-        # placeholder
-        # should contain algorithm that weights word frequency, etc.
-        # should reference self.wordDF
-
+        """
+        Takes in a word and returns its score
+        :param word: element of self.words
+        :type sentence: str
+        :return: score of word
+        :rtype: float
+        """
         stop_words = set(stopwords.words('english'))
         if word not in string.punctuation and word not in stop_words:
             return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
@@ -85,11 +105,12 @@ class WordDataFrame:
 
         # TODO: adjust these values to be reasonable within context of word score (is +0.5 too much/little?)
         ovr_sentiment = self.get_sentiment(self.fullText)
-        print(ovr_sentiment)
         if ovr_sentiment > 0.05 and self.sentencesDF.at[sentence, 'Sentiment'] > 0.4:  # positive
             score += 0.5
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
             score += 0.5
+
+        score += self.get_similarity(sentence)
 
         return score
 
@@ -101,7 +122,6 @@ class WordDataFrame:
         :return: String containing abbreviated text
         :rtype: str
         """
-
         # scores each sentence based on score_sentence function
         sentence_scores = [(sentence, self.score_sentence(sentence)) for sentence in self.sentences]
         # sorts by best score
@@ -124,12 +144,12 @@ class WordDataFrame:
         # joins sentences to make text body
         return ' '.join(sentences_to_return)
 
-    '''
-        Constructor
-        inputs: self, text (.txt file) //TODO: we will want to chance this so that links or raw text can be inputted
-    '''
-    # I made a temporary solution to allow for raw text input; but there might be a better/more consistent way —Toby
     def __init__(self, text):
+        """
+        Constructor
+        :param text: text input
+        :type percent: file or str
+        """
         self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
@@ -169,8 +189,6 @@ class WordDataFrame:
 
 
 
-obj = WordDataFrame('This movie sucks. I never want to go here again.')
+obj = WordDataFrame('test.txt')
 
-print(obj.sentencesDF)
 print(obj.condense(0.3))
-print(obj.wordDF[obj.wordDF['Words'] == 'political'])
