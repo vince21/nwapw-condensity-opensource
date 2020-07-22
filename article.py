@@ -7,6 +7,8 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 import pandas as pd
 import string
+import re
+from npr_webscraper import scrape
 
 class WordDataFrame:
 
@@ -85,7 +87,6 @@ class WordDataFrame:
 
         # TODO: adjust these values to be reasonable within context of word score (is +0.5 too much/little?)
         ovr_sentiment = self.get_sentiment(self.fullText)
-        print(ovr_sentiment)
         if ovr_sentiment > 0.05 and self.sentencesDF.at[sentence, 'Sentiment'] > 0.4:  # positive
             score += 0.5
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
@@ -133,11 +134,23 @@ class WordDataFrame:
         self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
+        # regex to test if the text is a link
+        regex = re.compile(
+            r'^(?:http|ftp)s?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
         # check if text is file or not
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
                     self.fullText += line
+        elif re.match(regex, text):
+            print('scraping')
+            self.fullText = scrape(text)['Raw Text']
         else:
             self.fullText = text
 
@@ -169,8 +182,7 @@ class WordDataFrame:
 
 
 
-obj = WordDataFrame('This movie sucks. I never want to go here again.')
+obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
 
 print(obj.sentencesDF)
 print(obj.condense(0.3))
-print(obj.wordDF[obj.wordDF['Words'] == 'political'])
