@@ -5,7 +5,6 @@ from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
-from nltk.corpus import wordnet as wn
 from nltk.wsd import lesk
 import pandas as pd
 import string
@@ -92,7 +91,14 @@ class WordDataFrame:
             return 0
 
     def score_synset(self, synset):
-        if synset is None:
+        """
+            Takes in a synset and returns its score
+            :param synset: The synset of a word
+            :type synset: wn.synset
+            :return: The score of the given synset (# of times it appears in the text)
+            :rtype: int
+        """
+        if synset is None: # Nones should be removed, leaving it just in case
             return 0
         else:
             return len(self.wordDF[self.wordDF['Synsets'] == synset])
@@ -174,7 +180,7 @@ class WordDataFrame:
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-        # check if text is file or not
+        # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
@@ -187,10 +193,12 @@ class WordDataFrame:
         self.sentences = sent_tokenize(self.fullText)
 
 
+        # adds words and their lemmas and synsets to these lists
         wordData = []
         lemmas = []
         synsets = []
 
+        # also filters stopwords/punctuation
         stop_words = set(stopwords.words('english'))
 
         for sentence in self.sentences:
@@ -201,13 +209,14 @@ class WordDataFrame:
                     lemmas.append(self.wnl.lemmatize(word))
                     synsets.append(lesk(words, word))
 
-        # scores words
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
                                               'Lemmas': lemmas,
                                               'Synsets': synsets})
 
+        # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
 
+        # scores words
         self.wordDF['Scores'] = [self.score_synset(synset) for synset in self.wordDF['Synsets']]
 
         # sentiment analysis for sentences
@@ -223,8 +232,8 @@ class WordDataFrame:
 
 
 
-#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
 
-obj = WordDataFrame('test.txt')
+#obj = WordDataFrame('test.txt')
 
-print(obj.condense(0.5))
+print(obj.condense(0.2))
