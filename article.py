@@ -47,7 +47,6 @@ class WordDataFrame:
                 nouns.append(word[0])
         return nouns
 
-
     def get_similarity(self, sentence):
         """
         Takes in a sentence and returns how similar it is to another sentence
@@ -203,10 +202,9 @@ class WordDataFrame:
 
 
 
-<<<<<<< HEAD
-obj = WordDataFrame('test.txt')
-=======
-obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
->>>>>>> 03c68f5088096574b57f37cff8fd31bb0238024c
 
-print(obj.condense(0.3))
+#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+
+obj = WordDataFrame('test.txt')
+
+print(obj.condense(0.5))
