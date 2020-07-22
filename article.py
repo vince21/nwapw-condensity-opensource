@@ -125,17 +125,17 @@ class WordDataFrame:
     # I made a temporary solution to allow for raw text input; but there might be a better/more consistent way —Toby
     def __init__(self, text):
         wnl = WordNetLemmatizer()
-        fullText = ""
+        self.fullText = ""
 
         # check if text is file or not
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
-                    fullText += line
+                    self.fullText += line
         else:
-            fullText = text
+            self.fullText = text
 
-        self.sentences = sent_tokenize(fullText)
+        self.sentences = sent_tokenize(self.fullText)
 
 
         wordData = []
@@ -154,6 +154,7 @@ class WordDataFrame:
 
         # sentiment analysis for sentences
         sia = SentimentIntensityAnalyzer()
+        print(sia.polarity_scores(self.fullText))
         sentence_sentiments = [sia.polarity_scores(sentence)['compound'] for sentence in self.sentences]
         self.sentencesDF = pd.DataFrame.from_dict({'Sentence': self.sentences,
                                                    'Sentiment': sentence_sentiments
@@ -161,9 +162,8 @@ class WordDataFrame:
         self.sentencesDF.set_index(self.sentencesDF['Sentence'], inplace=True)
         del self.sentencesDF['Sentence']
 
+obj = WordDataFrame("scraped-text/whales-get-a-break-as-pandemic-creates-quieter-oceans.txt")
 
-
-
-obj = WordDataFrame('test.txt')
-
-print(obj.condense(0.5))
+print(obj.sentencesDF.iloc[3])
+print(obj.get_sentiment())
+print(obj.condense(0.2))
