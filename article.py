@@ -5,14 +5,16 @@ from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet as wn
+from nltk.wsd import lesk
 import pandas as pd
 import string
 import re
 from npr_webscraper import scrape
 from fuzzywuzzy import fuzz
 
-class WordDataFrame:
 
+class WordDataFrame:
 
     def get_tags(self, row):
         '''
@@ -71,7 +73,9 @@ class WordDataFrame:
             :rtype: float
         """
         scores = self.sia.polarity_scores(text)
-        return (scores['pos']-scores['neg']) / scores['neu']
+        if scores['neu'] < 0.1:
+            scores['neu'] = 0.1
+        return (scores['pos'] - scores['neg']) / scores['neu']
 
     def score_word(self, word):
         """
@@ -87,6 +91,12 @@ class WordDataFrame:
         else:
             return 0
 
+    def score_synset(self, synset):
+        if synset is None:
+            return 0
+        else:
+            return len(self.wordDF[self.wordDF['Synsets'] == synset])
+
     def score_sentence(self, sentence):
         """
         Takes in a sentence and returns its score
@@ -99,7 +109,8 @@ class WordDataFrame:
         words = word_tokenize(sentence)
         score = 0
         for word in words:
-            score += self.score_word(word)
+            word_synset = lesk(words, word)
+            score += self.score_synset(word_synset)
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
@@ -169,7 +180,6 @@ class WordDataFrame:
                 for line in f:
                     self.fullText += line
         elif re.match(regex, text):
-            print('scraping')
             self.fullText = scrape(text)['Raw Text']
         else:
             self.fullText = text
@@ -179,16 +189,26 @@ class WordDataFrame:
 
         wordData = []
         lemmas = []
+        synsets = []
+
+        stop_words = set(stopwords.words('english'))
+
         for sentence in self.sentences:
             words = word_tokenize(sentence)
-            wordData.append(words)
             for word in words:
-                lemmas.append(self.wnl.lemmatize(word))
+                if word not in string.punctuation and word not in stop_words:
+                    wordData.append(word)
+                    lemmas.append(self.wnl.lemmatize(word))
+                    synsets.append(lesk(words, word))
 
-        #scores words
-        self.words = wordData
-        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(self.fullText),'Lemmas': lemmas})
-        self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
+        # scores words
+        self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
+                                              'Lemmas': lemmas,
+                                              'Synsets': synsets})
+
+        self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
+
+        self.wordDF['Scores'] = [self.score_synset(synset) for synset in self.wordDF['Synsets']]
 
         # sentiment analysis for sentences
         self.sia = SentimentIntensityAnalyzer()
