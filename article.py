@@ -46,15 +46,14 @@ class WordDataFrame:
                 nouns.append(word[0])
         return nouns
 
-    def get_sentiment(self):
+    def get_sentiment(self, text):
         """
-        gets the total sentiment of the text
-        :return: tuple containing the average sentiment and the average nonzero sentiment
-        :rtype: (float, float)
+            gets the sentiment of the given text
+            :return: the sentiment of the text: (positive valence - negative valence) / neutral valence
+            :rtype: float
         """
-        total_sentiment = self.sentencesDF['Sentiment'].mean()
-        nonzero_sentiment = self.sentencesDF[self.sentencesDF['Sentiment'] != 0]['Sentiment'].mean()
-        return total_sentiment, nonzero_sentiment
+        scores = self.sia.polarity_scores(text)
+        return (scores['pos']-scores['neg']) / scores['neu']
 
     def score_word(self, word):
         # placeholder
@@ -85,7 +84,8 @@ class WordDataFrame:
         # adding points if sentence matches overall sentiment of text
 
         # TODO: adjust these values to be reasonable within context of word score (is +0.5 too much/little?)
-        ovr_sentiment = self.get_sentiment()[0]
+        ovr_sentiment = self.get_sentiment(self.fullText)
+        print(ovr_sentiment)
         if ovr_sentiment > 0.05 and self.sentencesDF.at[sentence, 'Sentiment'] > 0.4:  # positive
             score += 0.5
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
@@ -154,12 +154,12 @@ class WordDataFrame:
 
         #scores words
         self.words = wordData
-        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(fullText),'Lemmas': lemmas})
+        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(self.fullText),'Lemmas': lemmas})
         self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
 
         # sentiment analysis for sentences
-        sia = SentimentIntensityAnalyzer()
-        sentence_sentiments = [sia.polarity_scores(sentence)['compound'] for sentence in self.sentences]
+        self.sia = SentimentIntensityAnalyzer()
+        sentence_sentiments = [self.get_sentiment(sentence) for sentence in self.sentences]
         self.sentencesDF = pd.DataFrame.from_dict({'Sentence': self.sentences,
                                                    'Sentiment': sentence_sentiments
                                                    })
@@ -169,7 +169,8 @@ class WordDataFrame:
 
 
 
-obj = WordDataFrame('test.txt')
+obj = WordDataFrame('This movie sucks. I never want to go here again.')
 
+print(obj.sentencesDF)
 print(obj.condense(0.3))
-print(obj.wordDF)
+print(obj.wordDF[obj.wordDF['Words'] == 'political'])
