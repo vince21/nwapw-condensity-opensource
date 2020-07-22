@@ -4,8 +4,9 @@ from nltk import word_tokenize
 from nltk import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
 import pandas as pd
-
+import string
 
 class WordDataFrame:
 
@@ -59,7 +60,12 @@ class WordDataFrame:
         # placeholder
         # should contain algorithm that weights word frequency, etc.
         # should reference self.wordDF
-        return 1
+
+        stop_words = set(stopwords.words('english'))
+        if word not in string.punctuation and word not in stop_words:
+            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
+        else:
+            return 0
 
     def score_sentence(self, sentence):
         """
@@ -124,7 +130,7 @@ class WordDataFrame:
     '''
     # I made a temporary solution to allow for raw text input; but there might be a better/more consistent way —Toby
     def __init__(self, text):
-        wnl = WordNetLemmatizer()
+        self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
         # check if text is file or not
@@ -144,17 +150,15 @@ class WordDataFrame:
             words = word_tokenize(sentence)
             wordData.append(words)
             for word in words:
-                lemma = wnl.lemmatize(word)
-                if lemma not in lemmas:
-                    lemmas.append(lemma)
+                lemmas.append(self.wnl.lemmatize(word))
 
-
+        #scores words
         self.words = wordData
-        self.wordDF = pd.DataFrame.from_dict({'Words': lemmas, 'Scores': 0})
+        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(fullText),'Lemmas': lemmas})
+        self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
 
         # sentiment analysis for sentences
         sia = SentimentIntensityAnalyzer()
-        print(sia.polarity_scores(self.fullText))
         sentence_sentiments = [sia.polarity_scores(sentence)['compound'] for sentence in self.sentences]
         self.sentencesDF = pd.DataFrame.from_dict({'Sentence': self.sentences,
                                                    'Sentiment': sentence_sentiments
@@ -162,8 +166,10 @@ class WordDataFrame:
         self.sentencesDF.set_index(self.sentencesDF['Sentence'], inplace=True)
         del self.sentencesDF['Sentence']
 
-obj = WordDataFrame("scraped-text/whales-get-a-break-as-pandemic-creates-quieter-oceans.txt")
 
-print(obj.sentencesDF.iloc[3])
-print(obj.get_sentiment())
-print(obj.condense(0.2))
+
+
+obj = WordDataFrame('test.txt')
+
+print(obj.condense(0.3))
+print(obj.wordDF)
