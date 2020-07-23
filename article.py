@@ -48,7 +48,7 @@ class WordDataFrame:
                 nouns.append(word[0])
         return nouns
 
-    def get_similarity(self, sentence):
+    def get_similarity(self, sentence, currentScore):
         """
         Takes in a sentence and returns how similar it is to another sentence
         :param sentence: element of self.sentences
@@ -61,7 +61,12 @@ class WordDataFrame:
             scores.append(fuzz.token_sort_ratio(sim, sentence))
         #TODO: fix this because it breaks
         try:
-            return -max(scores)/100
+            adjustedScore = -max(scores)/100
+
+            if adjustedScore < -0.85: return -currentScore/2
+            elif adjustedScore < -0.5: return adjustedScore
+            else: return 0
+
         except ValueError:
             return 0
 
@@ -128,8 +133,7 @@ class WordDataFrame:
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
             score += 0.5
 
-        score += self.get_similarity(sentence)
-
+        score += self.get_similarity(sentence,score)
         return score
 
     def condense(self, percent):
@@ -232,8 +236,7 @@ class WordDataFrame:
 
 
 
-obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+obj = WordDataFrame('test.txt')
 
-#obj = WordDataFrame('test.txt')
-
-print(obj.condense(0.2))
+print(obj.condense(0.3))
