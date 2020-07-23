@@ -1,6 +1,5 @@
 import nltk
-from nltk import word_tokenize
-from nltk import sent_tokenize
+from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from nltk.wsd import lesk
@@ -45,6 +44,17 @@ class WordDataFrame:
             scores['neu'] = 0.1
         return (scores['pos'] - scores['neg']) / scores['neu']
 
+    def get_synset(self, word, context):
+        pos_tagged_context = pos_tag(context)
+        word_pos = None
+        for tagged_word, pos in pos_tagged_context:
+            if word == tagged_word:
+                word_pos = pos
+                break
+        if word_pos is not None:
+            word_pos = word_pos[0].lower()
+        return lesk(context, word, word_pos)
+
     def score_synset(self, synset):
         """
             Takes in a synset and returns its score
@@ -85,7 +95,7 @@ class WordDataFrame:
         words = word_tokenize(sentence)
         score = 0
         for word in words:
-            word_synset = lesk(words, word)
+            word_synset = self.get_synset(word, words)
             score += self.score_synset(word_synset)
             #if the word is in the vocab
             if word in self.word_sentences:
@@ -202,7 +212,7 @@ class WordDataFrame:
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
                     lemmas.append(self.wnl.lemmatize(word))
-                    synsets.append(lesk(words, word))
+                    synsets.append(self.get_synset(word, words))
                     self.word_sentences.append(word)
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
@@ -228,6 +238,7 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-obj = WordDataFrame('https://www.nbcnews.com/politics/congress/senate-gop-white-house-reach-tentative-1-trillion-pact-break-n1234663')
+obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
 #obj = WordDataFrame('test.txt')
+#print(obj.synset_freq)
 print(obj.condense(0.2))
