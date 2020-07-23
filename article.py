@@ -1,8 +1,6 @@
 import nltk
-from nltk import StanfordTagger
 from nltk import word_tokenize
 from nltk import sent_tokenize
-from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from nltk.wsd import lesk
@@ -12,57 +10,9 @@ import re
 from npr_webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
-from nltk.corpus import brown
 
 
 class WordDataFrame:
-
-
-    def score_word(self, word):
-        """
-        Takes in a word and returns its score
-        :param word: element of self.words
-        :type sentence: str
-        :return: score of word
-        :rtype: float
-        """
-        stop_words = set(stopwords.words('english'))
-        if word not in string.punctuation and word not in stop_words:
-            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
-        else:
-            return 0
-    def get_tags(self, row):
-        '''
-            tags words by part of speech
-            inputs: self, row number (int)
-            outputs:  words and their part of speech (array[tuples])
-        '''
-        tagged = nltk.pos_tag(nltk.word_tokenize(self.sentences[row]))
-        return tagged
-    def get_verbs(self, row):
-        '''
-            finds verbs in a sentence
-            inputs: self, row number (int)
-            outputs:  words and their part of speech (array[VERBS])
-        '''
-        verbs = []
-        tagged = self.getTagsByRow(row)
-        for word in tagged:
-            if word[1] == "VB":
-                verbs.append(word[0])
-        return verbs
-    def get_nouns(self, row):
-        '''
-            finds nouns in a sentence
-            inputs: self, row number (int)
-            outputs:  words and their part of speech (array[Nouns])
-        '''
-        nouns = []
-        tagged = self.getTagsByRow(row)
-        for word in tagged:
-            if word[1] == "NN":
-                nouns.append(word[0])
-        return nouns
 
     def get_similarity(self, sentence, currentScore):
         """
@@ -108,6 +58,13 @@ class WordDataFrame:
             return len(self.wordDF[self.wordDF['Synsets'] == synset])
 
     def score_word2vec(self,word):
+        """
+        Takes in a word and adds up it's top 3 most similar word2vecs
+        :param word: a word in the vocab
+        :type sentence: str
+        :return: word2vec score of word
+        :rtype: float
+        """
         score = 0
         for sim in self.vec.wv.most_similar(word, topn=3):
             score += sim[1]
@@ -127,6 +84,7 @@ class WordDataFrame:
         for word in words:
             word_synset = lesk(words, word)
             score += self.score_synset(word_synset)
+            #if the word is in the vocab
             if word in self.word_sentences: score += self.score_word2vec(word)
         score /= len(words)
 
@@ -242,11 +200,6 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-
-
-
 #obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
 obj = WordDataFrame('test.txt')
-
 print(obj.condense(0.3))
-#obj.score_word2vec()
