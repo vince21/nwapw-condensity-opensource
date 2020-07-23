@@ -68,7 +68,8 @@ class WordDataFrame:
         """
         score = 0
         for sim in self.vec.wv.most_similar(word, topn=3):
-            score += sim[1]
+            if sim[1] > 0.5:
+                score += sim[1]
         return score
 
     def score_sentence(self, sentence):
@@ -200,6 +201,6 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
-obj = WordDataFrame('test.txt')
-print(obj.condense(0.3))
+obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+#obj = WordDataFrame('test.txt')
+print(obj.condense(0.2))
