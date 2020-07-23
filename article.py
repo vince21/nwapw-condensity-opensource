@@ -71,7 +71,9 @@ class WordDataFrame:
             :rtype: float
         """
         scores = self.sia.polarity_scores(text)
-        return (scores['pos']-scores['neg']) / scores['neu']
+        if scores['neu'] < 0.1:
+            scores['neu'] = 0.1
+        return (scores['pos'] - scores['neg']) / scores['neu']
 
     def score_word(self, word):
         """
@@ -143,7 +145,26 @@ class WordDataFrame:
         sentences_to_return.sort(key=lambda x: self.sentences.index(x))
 
         # joins sentences to make text body
-        return ' '.join(sentences_to_return)
+
+        # list for each paragraph
+        output = [[] for i in self.paragraphs]
+
+        # copies self.paragraphs to prevent destructive edits
+        paragraphs = [paragraph[:] for paragraph in self.paragraphs]
+
+        for sentence in sentences_to_return:
+            for i, paragraph in enumerate(paragraphs):
+                if sentence in paragraph:
+                    output[i].append(sentence)
+                    paragraph.remove(sentence)
+                    break
+
+        # joins paragraph sentences with spaces
+        output = [' '.join(paragraph) for paragraph in output]
+        # joins paragraphs with newlines if paragraphs aren't empty
+        output = '\n\n'.join([x for x in output if x.strip() != ''])
+
+        return output
 
     def __init__(self, text):
         """
@@ -163,31 +184,34 @@ class WordDataFrame:
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-        # check if text is file or not
+        # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
                     self.fullText += line
         elif re.match(regex, text):
-            print('scraping')
             self.fullText = scrape(text)['Raw Text']
         else:
             self.fullText = text
 
         self.sentences = sent_tokenize(self.fullText)
 
+        self.paragraphs = [sent_tokenize(paragraph) for paragraph in self.fullText.split('\n') if paragraph != '']
+        self.sentences = [sentence for paragraph in self.paragraphs for sentence in paragraph]
 
+
+        # adds words and their lemmas to these lists
         wordData = []
         lemmas = []
         for sentence in self.sentences:
             words = word_tokenize(sentence)
-            wordData.append(words)
             for word in words:
+                wordData.append(word)
                 lemmas.append(self.wnl.lemmatize(word))
 
         #scores words
         self.words = wordData
-        self.wordDF = pd.DataFrame.from_dict({'Words': word_tokenize(self.fullText),'Lemmas': lemmas})
+        self.wordDF = pd.DataFrame.from_dict({'Words': self.words,'Lemmas': lemmas})
         self.wordDF['Scores'] = [self.score_word(word) for word in self.wordDF['Words']]
 
         # sentiment analysis for sentences
@@ -203,8 +227,8 @@ class WordDataFrame:
 
 
 
-#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+obj = WordDataFrame('Test line. This is a test. Test line.\nTest line. This is an experiment.')
 
-obj = WordDataFrame('test.txt')
+#obj = WordDataFrame('test.txt')
 
-print(obj.condense(0.5))
+print(obj.condense(0.75))

@@ -2,3 +2,5 @@ pandas
 nltk
 requests
 bs4
+fuzzywuzzy
+python-Levenshtein
