@@ -3,3 +3,4 @@ nltk
 requests
 bs4
 fuzzywuzzy
+gensim

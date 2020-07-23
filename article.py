@@ -11,10 +11,26 @@ import string
 import re
 from npr_webscraper import scrape
 from fuzzywuzzy import fuzz
+from gensim.models import Word2Vec
+from nltk.corpus import brown
 
 
 class WordDataFrame:
 
+
+    def score_word(self, word):
+        """
+        Takes in a word and returns its score
+        :param word: element of self.words
+        :type sentence: str
+        :return: score of word
+        :rtype: float
+        """
+        stop_words = set(stopwords.words('english'))
+        if word not in string.punctuation and word not in stop_words:
+            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
+        else:
+            return 0
     def get_tags(self, row):
         '''
             tags words by part of speech
@@ -78,20 +94,6 @@ class WordDataFrame:
             scores['neu'] = 0.1
         return (scores['pos'] - scores['neg']) / scores['neu']
 
-    def score_word(self, word):
-        """
-        Takes in a word and returns its score
-        :param word: element of self.words
-        :type sentence: str
-        :return: score of word
-        :rtype: float
-        """
-        stop_words = set(stopwords.words('english'))
-        if word not in string.punctuation and word not in stop_words:
-            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
-        else:
-            return 0
-
     def score_synset(self, synset):
         """
             Takes in a synset and returns its score
@@ -104,6 +106,12 @@ class WordDataFrame:
             return 0
         else:
             return len(self.wordDF[self.wordDF['Synsets'] == synset])
+
+    def score_word2vec(self,word):
+        score = 0
+        for sim in self.vec.wv.most_similar(word, topn=3):
+            score += sim[1]
+        return score
 
     def score_sentence(self, sentence):
         """
@@ -119,6 +127,7 @@ class WordDataFrame:
         for word in words:
             word_synset = lesk(words, word)
             score += self.score_synset(word_synset)
+            if word in self.word_sentences: score += self.score_word2vec(word)
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
@@ -130,7 +139,9 @@ class WordDataFrame:
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
             score += 0.5
 
+        #subtracting points based on high similarity to other sentences
         score += self.get_similarity(sentence,score)
+        print(score)
         return score
 
     def condense(self, percent):
@@ -198,6 +209,7 @@ class WordDataFrame:
         wordData = []
         lemmas = []
         synsets = []
+        self.word_sentences = []
 
         # also filters stopwords/punctuation
         stop_words = set(stopwords.words('english'))
@@ -209,6 +221,7 @@ class WordDataFrame:
                     wordData.append(word)
                     lemmas.append(self.wnl.lemmatize(word))
                     synsets.append(lesk(words, word))
+                    self.word_sentences.append(word)
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
                                               'Lemmas': lemmas,
@@ -216,9 +229,6 @@ class WordDataFrame:
 
         # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
-
-        # scores words
-        self.wordDF['Scores'] = [self.score_synset(synset) for synset in self.wordDF['Synsets']]
 
         # sentiment analysis for sentences
         self.sia = SentimentIntensityAnalyzer()
@@ -229,6 +239,8 @@ class WordDataFrame:
         self.sentencesDF.set_index(self.sentencesDF['Sentence'], inplace=True)
         del self.sentencesDF['Sentence']
 
+        self.vec = Word2Vec([self.word_sentences], min_count=1)
+
 
 
 
@@ -237,3 +249,4 @@ class WordDataFrame:
 obj = WordDataFrame('test.txt')
 
 print(obj.condense(0.3))
+#obj.score_word2vec()
