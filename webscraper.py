@@ -1,8 +1,10 @@
+from newspaper import Article
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
-
-def scrape(url, write=False):
+def npr_scrape(url, write=False):
     """
     Takes a URL for an NPR article and returns the text and images.
     :param url: NPR article link
@@ -19,6 +21,9 @@ def scrape(url, write=False):
 
     author = soup.find('a', rel='author').text.strip()
 
+    date_text = soup.find('div', class_='dateblock').find('time')['datetime']
+    date = datetime.strptime(date_text, '%Y-%m-%dT%X%z')
+
     text_elements = []
     images = []
 
@@ -33,12 +38,11 @@ def scrape(url, write=False):
 
     raw_text = '\n'.join([tag.text.strip() for tag in text_elements])
 
-    output_dict = {
-                   'Title': title,
+    output_dict = {'Title': title,
                    'Author': author,
-                   'Text Elements': text_elements,
-                   'Raw Text': raw_text,
-                   'Images': images
+                   'Date': date,
+                   'Text': raw_text,
+                   'Image': images[0]
                    }
 
     if write:
@@ -49,10 +53,29 @@ def scrape(url, write=False):
     return output_dict
 
 
+def scrape(url):
+
+    domain = urlparse(url).netloc.split('.')[1]
+    if domain == 'npr':
+        return npr_scrape(url)
+
+    article = Article(url)
+
+    article.download()
+    article.parse()
+
+    return {'Title': article.title,
+            'Authors': article.authors,
+            'Date': article.publish_date,
+            'Text': article.text,
+            'Image': article.top_image}
+
+
 if __name__ == '__main__':
     test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
-    print(f'Author: {scrape_output["Author"]}')
-    print(f'Raw Text: {scrape_output["Raw Text"]}')
-    print(f'Images: {scrape_output["Images"]}')
+    print(f'Authors: {scrape_output["Author"]}')
+    print(f'Date: {scrape_output["Date"]}')
+    print(f'Text: {scrape_output["Text"]}')
+    print(f'Image: {scrape_output["Image"]}')

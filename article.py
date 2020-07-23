@@ -7,7 +7,7 @@ from nltk.wsd import lesk
 import pandas as pd
 import string
 import re
-from npr_webscraper import scrape
+from webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
@@ -176,7 +176,7 @@ class WordDataFrame:
                 for line in f:
                     self.fullText += line
         elif re.match(regex, text):
-            self.fullText = scrape(text)['Raw Text']
+            self.fullText = scrape(text)['Text']
         else:
             self.fullText = text
 
@@ -197,8 +197,6 @@ class WordDataFrame:
         for sentence in self.sentences:
             words = word_tokenize(sentence)
             for word in words:
-                wordData.append(word)
-                lemmas.append(self.wnl.lemmatize(word))
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
                     lemmas.append(self.wnl.lemmatize(word))
@@ -224,6 +222,6 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-#obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
-obj = WordDataFrame('test.txt')
-print(obj.condense(0.1))
+obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+#obj = WordDataFrame('test.txt')
+print(obj.condense(0.2))
