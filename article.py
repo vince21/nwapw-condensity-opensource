@@ -10,6 +10,7 @@ import re
 from npr_webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
+from nltk.stem import WordNetLemmatizer
 
 
 class WordDataFrame:
@@ -99,7 +100,6 @@ class WordDataFrame:
 
         #subtracting points based on high similarity to other sentences
         score += self.get_similarity(sentence,score)
-        print(score)
         return score
 
     def condense(self, percent):

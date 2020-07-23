@@ -1,5 +1,5 @@
 from nltk import StanfordTagger
-from nltk.stem import WordNetLemmatizer
+
 
     def score_word(self, word):
         """
