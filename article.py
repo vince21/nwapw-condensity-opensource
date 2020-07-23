@@ -56,7 +56,8 @@ class WordDataFrame:
         if synset is None: # Nones should be removed, leaving it just in case
             return 0
         else:
-            return len(self.wordDF[self.wordDF['Synsets'] == synset])
+            # frequency normalized against max frequency
+            return self.synset_freq.get(synset, 0) / max(self.synset_freq.values())
 
     def score_word2vec(self,word):
         """
@@ -87,7 +88,8 @@ class WordDataFrame:
             word_synset = lesk(words, word)
             score += self.score_synset(word_synset)
             #if the word is in the vocab
-            if word in self.word_sentences: score += self.score_word2vec(word)
+            if word in self.word_sentences:
+                score += self.score_word2vec(word)
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
@@ -210,6 +212,10 @@ class WordDataFrame:
         # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
 
+        # creates dict of synsets and their counts
+        # could add to wordDF?
+        self.synset_freq = self.wordDF['Synsets'].value_counts().to_dict()
+
         # sentiment analysis for sentences
         self.sia = SentimentIntensityAnalyzer()
         sentence_sentiments = [self.get_sentiment(sentence) for sentence in self.sentences]
@@ -222,6 +228,6 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+obj = WordDataFrame('https://www.nbcnews.com/politics/congress/senate-gop-white-house-reach-tentative-1-trillion-pact-break-n1234663')
 #obj = WordDataFrame('test.txt')
 print(obj.condense(0.2))
