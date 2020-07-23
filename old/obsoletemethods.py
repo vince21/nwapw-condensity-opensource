@@ -1,19 +1,19 @@
 from nltk import StanfordTagger
 
+        def score_word(self, word):
+            """
+            Takes in a word and returns its score
+            :param word: element of self.words
+            :type sentence: str
+            :return: score of word
+            :rtype: float
+            """
+            stop_words = set(stopwords.words('english'))
+            if word not in string.punctuation and word not in stop_words:
+                return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
+            else:
+                return 0
 
-    def score_word(self, word):
-        """
-        Takes in a word and returns its score
-        :param word: element of self.words
-        :type sentence: str
-        :return: score of word
-        :rtype: float
-        """
-        stop_words = set(stopwords.words('english'))
-        if word not in string.punctuation and word not in stop_words:
-            return len(self.wordDF.loc[self.wordDF['Lemmas'] == self.wnl.lemmatize(word)])
-        else:
-            return 0
     def get_tags(self, row):
         '''
             tags words by part of speech
