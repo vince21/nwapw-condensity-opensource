@@ -56,18 +56,15 @@ class WordDataFrame:
         :return: score of sentence
         :rtype: float
         """
-        scores = []
-        for sim in self.sentences[self.sentences.index(sentence)+1:]:
-            scores.append(fuzz.token_sort_ratio(sim, sentence))
-        #TODO: fix this because it breaks
-        try:
+        index = self.sentences.index(sentence)
+
+        if index != len(self.sentences)-1:
+            scores = [fuzz.token_sort_ratio(sim, sentence) for sim in self.sentences[index+1:]]
             adjustedScore = -max(scores)/100
-
-            if adjustedScore < -0.85: return -currentScore/2
-            elif adjustedScore < -0.5: return adjustedScore
-            else: return 0
-
-        except ValueError:
+            if adjustedScore < -0.85: return 2 * adjustedScore #heavily decrecrement highly similar sentences
+            elif adjustedScore < -0.6: return adjustedScore #decrement the score of somewhat similar sentences
+            else: return 0 #ignore low levels of similarity
+        else:
             return 0
 
     def get_sentiment(self, text):
