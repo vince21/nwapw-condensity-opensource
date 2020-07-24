@@ -159,7 +159,8 @@ class Summarizer:
         Gets info on how much the text was condensed by.
         :param condensed_text: The condensed text (to be compared against the original)
         :type condensed_text: str
-        :return: Dictionary containing the absolute and relative reductions
+        :return: The absolute and relative reductions of sentences, words, and characters.
+        :rtype: dict
         """
         og_info = {'Sentences': len(self.sentences),
                          'Words': len(self.all_words),
