@@ -12,9 +12,7 @@ def home():
 @app.route('/results', methods=['GET', 'POST'])
 def results():
     if request.method == 'POST':
-        text = request.form['link']
-        if not text:
-            text = request.form['textfield']
+        text = request.form['text']
         percent = request.form['percent']
         summary = Summarizer(text)
         return summary.condense(int(percent)/100)
