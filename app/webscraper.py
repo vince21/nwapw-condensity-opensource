@@ -44,12 +44,12 @@ def npr_scrape(url, write=False):
                    'Text': raw_text,
                    'Image': images[0]
                    }
-
+    '''
     if write:
         modified_title = '-'.join(title.lower().split(' '))
         with open(f'scraped-text/{modified_title}.txt', 'w') as f:
             f.write(raw_text)
-
+    '''
     return output_dict
 
 
