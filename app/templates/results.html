@@ -2,7 +2,9 @@
 
 {% block content %}
     <div>
-      <p>{{ summary_text }}</p>
+      {% for sentence in summary_sentences %}
+        <p>{{ sentence }}</p>
+      {% endfor %}
     </div>
     <div>
       <p>Condensed by {{ metrics['Total %'] }}% ({{ metrics['Sentences'] }} sentences,

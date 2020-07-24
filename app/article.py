@@ -160,6 +160,11 @@ class Summarizer:
         return output
 
     def get_optimal_condense_percent(self):
+        """
+        Calculates a percent to condense to based on the number of sentences
+        :return: percent to condense to
+        :rtype: float
+        """
         target_sentences = np.log(len(self.sentences)) ** 2
         if target_sentences > 25:  # happens at around 150 sentences
             target_sentences = 25
