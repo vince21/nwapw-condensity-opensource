@@ -1,0 +1,10 @@
+pandas
+nltk
+requests
+bs4
+fuzzywuzzy
+python-Levenshtein
+gensim
+newspaper3k
+flask
+gunicorn
