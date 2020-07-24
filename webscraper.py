@@ -67,9 +67,7 @@ def cnn_scrape(url):
     date_text = soup.find('p', class_='update-time').text.strip().split('Updated ')[-1].split(', ')
     date_text[0] = date_text[0][:-3]
     date_text = ' '.join(date_text)
-    print(date_text)
     date = datetime.strptime(date_text, '%M:%S %p %a %B %d %Y')
-    print(date)
 
     body = soup.find_all(class_='zn-body__paragraph')
     body = [tag for tag in body if not tag.find('h3')]
@@ -112,7 +110,7 @@ def scrape(url, write=False):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.cnn.com/2020/07/23/health/shutdown-us-contain-coronavirus-wellness/index.html'
+    test_url = 'https://www.cnn.com/2020/07/23/us/breonna-taylor-police-shooting-invs/index.html'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Author"]}')
