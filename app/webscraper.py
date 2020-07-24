@@ -44,12 +44,12 @@ def npr_scrape(url, write=False):
                    'Text': raw_text,
                    'Image': images[0]
                    }
-    '''
+    """
     if write:
         modified_title = '-'.join(title.lower().split(' '))
         with open(f'scraped-text/{modified_title}.txt', 'w') as f:
             f.write(raw_text)
-    '''
+    """
     return output_dict
 
 
@@ -72,6 +72,7 @@ def scrape(url):
 
 
 if __name__ == '__main__':
+    """
     test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
@@ -79,3 +80,4 @@ if __name__ == '__main__':
     print(f'Date: {scrape_output["Date"]}')
     print(f'Text: {scrape_output["Text"]}')
     print(f'Image: {scrape_output["Image"]}')
+    """
