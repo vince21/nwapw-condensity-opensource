@@ -15,7 +15,8 @@ def results():
         text = request.form['text']
         percent = request.form['percent']
         summary = Summarizer(text)
-        return summary.condense(int(percent)/100)
+        summary_text = summary.condense(int(percent)/100)
+        return render_template('results.html', summary_text=summary_text)
     else:
         return render_template('index.html')
 

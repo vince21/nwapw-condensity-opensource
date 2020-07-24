@@ -1,6 +1,5 @@
 import nltk
-from nltk import word_tokenize
-from nltk import sent_tokenize
+from nltk import word_tokenize, sent_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from nltk.wsd import lesk
@@ -11,6 +10,8 @@ from webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
+from datetime import datetime
+import os
 
 
 class Summarizer:
@@ -58,7 +59,7 @@ class Summarizer:
         else:
             return len(self.wordDF[self.wordDF['Synsets'] == synset])
 
-    def score_word2vec(self,word):
+    def score_word2vec(self, word):
         """
         Takes in a word and adds up it's top 3 most similar word2vecs
         :param word: a word in the vocab
@@ -67,6 +68,8 @@ class Summarizer:
         :rtype: float
         """
         score = 0
+        if word not in self.vec:
+            return 0
         for sim in self.vec.wv.most_similar(word, topn=3):
             if sim[1] > 0.3:
                 score += sim[1]
@@ -221,8 +224,10 @@ class Summarizer:
 
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
-'''
-obj = Summarizer('https://www.cnbc.com/2020/07/23/coronavirus-stimulus-gop-unemployment-plan-would-have-70percent-wage-replacement.html')
-#obj = Summarizer('test.txt')
-print(obj.condense(0.2))
-'''
+
+if __name__ == '__main__':
+    start_time = datetime.now()
+    obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+    #obj = Summarizer('test.txt')
+    print(obj.condense(0.2))
+    print(f'Time: {datetime.now() - start_time}')
