@@ -197,9 +197,8 @@ class WordDataFrame:
         self.paragraphs = [sent_tokenize(paragraph) for paragraph in self.fullText.split('\n') if paragraph != '']
         self.sentences = [sentence for paragraph in self.paragraphs for sentence in paragraph]
 
-        # adds words and their lemmas and synsets to these lists
+        # adds words and their synsets to these lists
         wordData = []
-        lemmas = []
         synsets = []
         self.word_sentences = []
 
@@ -211,12 +210,10 @@ class WordDataFrame:
             for word in words:
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
-                    lemmas.append(self.wnl.lemmatize(word))
                     synsets.append(self.get_synset(word, words))
                     self.word_sentences.append(word)
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
-                                              'Lemmas': lemmas,
                                               'Synsets': synsets})
 
         # removes "None"s from df
@@ -238,7 +235,5 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
-#obj = WordDataFrame('test.txt')
-#print(obj.synset_freq)
-print(obj.condense(0.2))
+obj = WordDataFrame('https://www.cnn.com/2020/07/23/health/shutdown-us-contain-coronavirus-wellness/index.html')
+print(obj.condense(1))
