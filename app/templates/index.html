@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
+<title>Summarizer</title>
 </head>
 <body>
 
-  <form method="POST" action="/results">
+  <form method="POST" action="/results" id="data">
     <label for="link">Link:</label><br>
     <input type="text" id="link" name="link"><br>
-      <input type="submit" value="Go">
+    <label for="textfield">Enter Text Here:</label><br>
+    <input type="textarea" id="textfield" name="textfield"></textarea><br>
+    <label for="link">Percent(1-100):</label><br>
+    <input type="number" id="percent" name="percent" min=1 max=100><br>
+    <input type="submit" value="Summarize">
   </form>
 
 
