@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-def npr_scrape(url, write=False):
+def npr_scrape(url):
     """
     Takes a URL for an NPR article and returns the text and images.
     :param url: NPR article link
@@ -19,7 +19,7 @@ def npr_scrape(url, write=False):
 
     title = soup.find('div', class_='storytitle').find('h1').text.strip()
 
-    author = soup.find('a', rel='author').text.strip()
+    author = [element.text.strip() for element in soup.find_all('a', rel='author')]
 
     date_text = soup.find('div', class_='dateblock').find('time')['datetime']
     date = datetime.strptime(date_text, '%Y-%m-%dT%X%z')
@@ -45,24 +45,62 @@ def npr_scrape(url, write=False):
                    'Image': images[0]
                    }
 
-    if write:
-        modified_title = '-'.join(title.lower().split(' '))
-        with open(f'scraped-text/{modified_title}.txt', 'w') as f:
-            f.write(raw_text)
-
     return output_dict
 
+def cnn_scrape(url):
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
 
-def scrape(url):
+    title = soup.find('h1', class_='pg-headline').text.strip()
+
+    author = soup.find('span', class_='metadata__byline__author').text
+    author_list = author.split(', ')
+    author_list[0] = author_list[0][3:] # gets rid of "by"
+    del author_list[-1] # deletes "cnn" at end
+    if ' and ' in author:
+        ending_authors = author_list[-1].split(' and ')
+        del author_list[-1]
+        for ending_author in ending_authors:
+            author_list.append(ending_author)
+
+    # strftime doesn't recognize ET as timezone; timezone not included
+    date_text = soup.find('p', class_='update-time').text.strip().split('Updated ')[-1].split(', ')
+    date_text[0] = date_text[0][:-3]
+    date_text = ' '.join(date_text)
+    date = datetime.strptime(date_text, '%M:%S %p %a %B %d %Y')
+
+    body = soup.find_all(class_='zn-body__paragraph')
+    body = [tag for tag in body if not tag.find('h3')]
+    raw_text = '\n'.join([tag.text.strip() for tag in body])
+    if raw_text[:5] == '(CNN)':
+        raw_text = raw_text[5:]
+
+    image = soup.find('img', class_='media__image')['src']
+
+    return {'Title': title,
+            'Author': author,
+            'Date': date,
+            'Text': raw_text,
+            'Image': image}
+
+
+def scrape(url, write=False):
 
     domain = urlparse(url).netloc.split('.')[1]
     if domain == 'npr':
         return npr_scrape(url)
+    elif domain == 'cnn':
+        return cnn_scrape(url)
 
     article = Article(url)
 
     article.download()
     article.parse()
+
+    if write:
+        modified_title = '-'.join(article.title.lower().split(' '))
+        with open(f'scraped-text/{modified_title}.txt', 'w') as f:
+            f.write(article.text)
 
     return {'Title': article.title,
             'Authors': article.authors,
@@ -72,7 +110,7 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
+    test_url = 'https://www.cnn.com/2020/07/23/us/breonna-taylor-police-shooting-invs/index.html'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Author"]}')
