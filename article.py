@@ -1,6 +1,5 @@
 import nltk
-from nltk import word_tokenize
-from nltk import sent_tokenize
+from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from nltk.wsd import lesk
@@ -45,6 +44,17 @@ class WordDataFrame:
             scores['neu'] = 0.1
         return (scores['pos'] - scores['neg']) / scores['neu']
 
+    def get_synset(self, word, context):
+        pos_tagged_context = pos_tag(context)
+        word_pos = None
+        for tagged_word, pos in pos_tagged_context:
+            if word == tagged_word:
+                word_pos = pos
+                break
+        if word_pos is not None:
+            word_pos = word_pos[0].lower()
+        return lesk(context, word, word_pos)
+
     def score_synset(self, synset):
         """
             Takes in a synset and returns its score
@@ -56,7 +66,8 @@ class WordDataFrame:
         if synset is None: # Nones should be removed, leaving it just in case
             return 0
         else:
-            return len(self.wordDF[self.wordDF['Synsets'] == synset])
+            # frequency normalized against max frequency
+            return self.synset_freq.get(synset, 0) / max(self.synset_freq.values())
 
     def score_word2vec(self,word):
         """
@@ -84,10 +95,11 @@ class WordDataFrame:
         words = word_tokenize(sentence)
         score = 0
         for word in words:
-            word_synset = lesk(words, word)
+            word_synset = self.get_synset(word, words)
             score += self.score_synset(word_synset)
             #if the word is in the vocab
-            if word in self.word_sentences: score += self.score_word2vec(word)
+            if word in self.word_sentences:
+                score += self.score_word2vec(word)
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
@@ -185,9 +197,8 @@ class WordDataFrame:
         self.paragraphs = [sent_tokenize(paragraph) for paragraph in self.fullText.split('\n') if paragraph != '']
         self.sentences = [sentence for paragraph in self.paragraphs for sentence in paragraph]
 
-        # adds words and their lemmas and synsets to these lists
+        # adds words and their synsets to these lists
         wordData = []
-        lemmas = []
         synsets = []
         self.word_sentences = []
 
@@ -199,16 +210,18 @@ class WordDataFrame:
             for word in words:
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
-                    lemmas.append(self.wnl.lemmatize(word))
-                    synsets.append(lesk(words, word))
+                    synsets.append(self.get_synset(word, words))
                     self.word_sentences.append(word)
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
-                                              'Lemmas': lemmas,
                                               'Synsets': synsets})
 
         # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
+
+        # creates dict of synsets and their counts
+        # could add to wordDF?
+        self.synset_freq = self.wordDF['Synsets'].value_counts().to_dict()
 
         # sentiment analysis for sentences
         self.sia = SentimentIntensityAnalyzer()
@@ -222,6 +235,5 @@ class WordDataFrame:
         self.vec = Word2Vec([self.word_sentences], min_count=1)
 
 
-obj = WordDataFrame('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
-#obj = WordDataFrame('test.txt')
-print(obj.condense(0.2))
+obj = WordDataFrame('https://www.cnn.com/2020/07/23/health/shutdown-us-contain-coronavirus-wellness/index.html')
+print(obj.condense(1))
