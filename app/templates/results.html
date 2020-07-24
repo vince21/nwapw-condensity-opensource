@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <p>{{ summary_text }}</p>
+    <div>
+      <p>{{ summary_text }}</p>
+    </div>
+    <div>
+      <p>Condensed by {{ metrics['Total %'] }}% ({{ metrics['Sentences'] }} sentences,
+          {{ metrics['Words'] }} words,
+          {{ metrics['Characters'] }} characters removed)</p>
+    </div>
+
 {% endblock content %}

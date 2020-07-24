@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+
 def npr_scrape(url, write=False):
     """
     Takes a URL for an NPR article and returns the text and images.

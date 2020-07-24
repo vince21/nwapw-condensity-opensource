@@ -1,4 +1,3 @@
-import nltk
 from nltk import word_tokenize, sent_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
@@ -11,7 +10,6 @@ from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
 from datetime import datetime
-import os
 
 
 class Summarizer:
@@ -68,7 +66,7 @@ class Summarizer:
         :rtype: float
         """
         score = 0
-        if word not in self.vec:
+        if word not in self.vec.wv:
             return 0
         for sim in self.vec.wv.most_similar(word, topn=3):
             if sim[1] > 0.3:
@@ -90,7 +88,8 @@ class Summarizer:
             word_synset = lesk(words, word)
             score += self.score_synset(word_synset)
             #if the word is in the vocab
-            if word in self.word_sentences: score += self.score_word2vec(word)
+            if word in self.wordlist:
+                score += self.score_word2vec(word)
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
@@ -136,7 +135,7 @@ class Summarizer:
         # joins sentences to make text body
 
         # list for each paragraph
-        output = [[] for i in self.paragraphs]
+        output = [[] for _ in self.paragraphs]
 
         # copies self.paragraphs to prevent destructive edits
         paragraphs = [paragraph[:] for paragraph in self.paragraphs]
@@ -155,6 +154,26 @@ class Summarizer:
 
         return output
 
+    def condense_metrics(self, condensed_text):
+        """
+        Gets info on how much the text was condensed by.
+        :param condensed_text: The condensed text (to be compared against the original)
+        :type condensed_text: str
+        :return: Dictionary containing the absolute and relative reductions
+        """
+        og_info = {'Sentences': len(self.sentences),
+                         'Words': len(self.all_words),
+                         'Characters': len(self.fullText)}
+        condensed_info = {'Sentences': len(sent_tokenize(condensed_text)),
+                          'Words': len(word_tokenize(condensed_text)),
+                          'Characters': len(condensed_text)}
+
+        info = {k: og_info[k] - condensed_info[k] for k in og_info.keys()}
+        percentage_info = {'% ' + k: 100 * (1 - round(condensed_info[k]/og_info[k], 4)) for k in og_info.keys()}
+        info.update(percentage_info)
+        info['Total %'] = round(sum(percentage_info.values()) / len(percentage_info.values()), 2)
+        return info
+
     def __init__(self, text):
         """
         Constructor
@@ -165,7 +184,7 @@ class Summarizer:
         self.fullText = ""
 
         # regex to test if the text is a link
-        regex = re.compile(
+        link_regex = re.compile(
             r'^(?:http|ftp)s?://'  # http:// or https://
             r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
             r'localhost|'  # localhost...
@@ -178,7 +197,7 @@ class Summarizer:
             with open(text) as f:
                 for line in f:
                     self.fullText += line
-        elif re.match(regex, text):
+        elif re.match(link_regex, text):
             self.fullText = scrape(text)['Text']
         else:
             self.fullText = text
@@ -192,7 +211,9 @@ class Summarizer:
         wordData = []
         lemmas = []
         synsets = []
-        self.word_sentences = []
+
+        # used for finding condense percent; not for use in scoring (contains stopwords, etc.)
+        self.all_words = []
 
         # also filters stopwords/punctuation
         stop_words = set(stopwords.words('english'))
@@ -200,15 +221,17 @@ class Summarizer:
         for sentence in self.sentences:
             words = word_tokenize(sentence)
             for word in words:
+                self.all_words.append(word)
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
                     lemmas.append(self.wnl.lemmatize(word))
                     synsets.append(lesk(words, word))
-                    self.word_sentences.append(word)
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
                                               'Lemmas': lemmas,
                                               'Synsets': synsets})
+
+        self.wordlist = wordData
 
         # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
@@ -222,7 +245,7 @@ class Summarizer:
         self.sentencesDF.set_index(self.sentencesDF['Sentence'], inplace=True)
         del self.sentencesDF['Sentence']
 
-        self.vec = Word2Vec([self.word_sentences], min_count=1)
+        self.vec = Word2Vec([self.wordlist], min_count=1)
 
 
 if __name__ == '__main__':
@@ -230,4 +253,5 @@ if __name__ == '__main__':
     obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
     #obj = Summarizer('test.txt')
     print(obj.condense(0.2))
-    print(f'Time: {datetime.now() - start_time}')
+    print(obj.condense_metrics(obj.condense(0.2)))
+    print(f'\nTime: {datetime.now() - start_time}')
