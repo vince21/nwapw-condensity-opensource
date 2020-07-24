@@ -192,6 +192,18 @@ class Summarizer:
         info['Total %'] = round(sum(percentage_info.values()) / len(percentage_info.values()), 2)
         return info
 
+    def get_article_info(self):
+        """
+        Gets non-body info about the article. If a non-URL source is used, will return None for all keys except "Text".
+        :return: Dict containing "Title", "Authors" (list), "Date" (datetime), "Text", "Image"
+        :rtype: dict
+        """
+        return {'Title': self.title,
+                'Authors': self.authors,
+                'Date': self.date,
+                'Text': self.fullText,
+                'Image': self.image}
+
     def __init__(self, text):
         """
         Constructor
@@ -210,13 +222,22 @@ class Summarizer:
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
+        # attributes that can be scraped (if a link is inputted)
+        self.title = None
+        self.author = None
+        self.date = None
+        self.image = None
         # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
                     self.fullText += line
         elif re.match(link_regex, text):
-            self.fullText = scrape(text)['Text']
+            scrape_results = scrape(text)
+            self.fullText = scrape_results['Text']
+            self.title = scrape_results['Title']
+            self.author = scrape_results['Author']
+            self.image = scrape_results['Image']
         else:
             self.fullText = text
 

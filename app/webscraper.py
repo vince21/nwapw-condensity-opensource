@@ -7,13 +7,13 @@ from datetime import datetime
 
 def npr_scrape(url, write=False):
     """
-    Takes a URL for an NPR article and returns the text and images.
+    Takes a URL for an NPR article and returns the page text and info.
     :param url: NPR article link
     :type url: str
     :param write: If true, writes the article text to a file
     :type write: bool
-    :return: List of text elements in body and list of image links
-    :rtype: ([bs4.element.Tag], [str]))
+    :return: Article title, list of authors, date published( datetime), text, and an image
+    :rtype: dict
     """
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text, 'html.parser')
@@ -40,7 +40,7 @@ def npr_scrape(url, write=False):
     raw_text = '\n'.join([tag.text.strip() for tag in text_elements])
 
     output_dict = {'Title': title,
-                   'Author': author,
+                   'Authors': [author],
                    'Date': date,
                    'Text': raw_text,
                    'Image': images[0]
@@ -55,6 +55,13 @@ def npr_scrape(url, write=False):
 
 
 def scrape(url):
+    """
+    Takes a url and returns info about the page.
+    :param url: Valid url for a web article
+    :type url: str
+    :return: Article title, list of authors, date published( datetime), text, and an image
+    :rtype: dict
+    """
 
     domain = urlparse(url).netloc.split('.')[1]
     if domain == 'npr':
