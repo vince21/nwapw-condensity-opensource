@@ -1,6 +1,6 @@
 # Condensity
 
-Condensity is a Python project by Toby U., Spencer C. and Vincent W. that summarizes text with a novel extraction algorithm.
+Condensity is a Python project by Toby U., Spencer C., and Vincent W. that summarizes text with a novel extraction algorithm.
 
 ## Installation
 First, clone the repo and install nginx
@@ -29,5 +29,4 @@ Finally, serve with gunicorn
 gunicorn --bind 0.0.0.0:8000 wsgi:app
 ```
 ## Resources and Citations
-Cite Vader sentiment analyzer in webpage:
 Hutto, C.J. & Gilbert, E.E. (2014). VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. Eighth International Conference on Weblogs and Social Media (ICWSM-14). Ann Arbor, MI, June 2014.
