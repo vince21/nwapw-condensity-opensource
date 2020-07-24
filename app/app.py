@@ -14,8 +14,13 @@ def results():
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
+        # catches empty percent field
+        if percent.isnumeric():
+            percent = int(percent) / 100
+        else:
+            percent = None
         summary = Summarizer(text)
-        summary_text = summary.condense(int(percent)/100)
+        summary_text = summary.condense(percent)
         metrics = summary.condense_metrics(summary_text)
         return render_template('results.html', summary_text=summary_text, metrics=metrics)
     else:

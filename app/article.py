@@ -10,6 +10,7 @@ from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
 from datetime import datetime
+import numpy as np
 
 
 class Summarizer:
@@ -105,7 +106,7 @@ class Summarizer:
         score += self.get_similarity(sentence,score)
         return score
 
-    def condense(self, percent):
+    def condense(self, percent=None):
         """
         Condenses the text in self.sentences by a given percent
         :param percent: Specifies how much the text should be reduced by (0 < percent <= 1)
@@ -113,6 +114,10 @@ class Summarizer:
         :return: String containing abbreviated text
         :rtype: str
         """
+        # automatically sets percent to condense by if not specified
+        if not percent:
+            percent = self.get_optimal_condense_percent()
+
         # scores each sentence based on score_sentence function
         sentence_scores = [(sentence, self.score_sentence(sentence)) for sentence in self.sentences]
         # sorts by best score
@@ -153,6 +158,13 @@ class Summarizer:
         output = '\n\n'.join([x for x in output if x.strip() != ''])
 
         return output
+
+    def get_optimal_condense_percent(self):
+        target_sentences = np.log(len(self.sentences)) ** 2
+        if target_sentences > 25:  # happens at around 150 sentences
+            target_sentences = 25
+        return target_sentences / len(self.sentences)
+
 
     def condense_metrics(self, condensed_text):
         """
@@ -252,7 +264,7 @@ class Summarizer:
 if __name__ == '__main__':
     start_time = datetime.now()
     obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
-    #obj = Summarizer('test.txt')
-    print(obj.condense(0.2))
-    print(obj.condense_metrics(obj.condense(0.2)))
+    condensed_text = obj.condense()
+    print(condensed_text)
+    print(obj.condense_metrics(condensed_text))
     print(f'\nTime: {datetime.now() - start_time}')
