@@ -293,4 +293,4 @@ if __name__ == '__main__':
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
-    print(f'\nTime: {datetime.now() - start_time}')
+    #print(f'\nTime: {datetime.now() - start_time}')
