@@ -10,18 +10,28 @@
     <form method="POST" action="/results" id="data">
       <div class="form-group">
         <label for="text">Enter Text or a News Article Link:</label>
-        <textarea class="form-control" rows="10" id="text" name="text"></textarea>
+        <textarea class="form-control" rows="7" id="text" name="text"></textarea>
       </div>
       <div class="form-group">
         <label for="percent">Condense to %:</label><br>
         <input type="number" id="percent" name="percent" min="1" max="100">
       </div>
       <div class="text-center">
-        <button class="btn btn-default" type="submit">
+        <button class="btn btn-lg" type="submit" id="submit">
           Condense
         </button>
       </div>
+      <p id="txt"></p>
     </form>
     <br>
   </div>
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+     $("#data").submit(function(){
+       $( "#submit" ).replaceWith("<button class=\"btn btn-lg\" type=\"button\" disabled><span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span>Loading...</button>");
+     });
+
+    });
+  </script>
 {% endblock content %}
