@@ -5,7 +5,7 @@ from nltk.wsd import lesk
 import pandas as pd
 import string
 import re
-from webscraper import scrape
+from app.webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
@@ -73,6 +73,10 @@ class Summarizer:
             if sim[1] > 0.3:
                 score += sim[1]
         return score
+
+
+    def set_weights(self):
+        pass
 
     def score_sentence(self, sentence):
         """
@@ -285,6 +289,8 @@ class Summarizer:
         del self.sentencesDF['Sentence']
 
         self.vec = Word2Vec([self.wordlist], min_count=1)
+
+        # set default scoring weights
 
 
 if __name__ == '__main__':
