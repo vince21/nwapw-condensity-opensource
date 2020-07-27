@@ -27,6 +27,42 @@
   </div>
   {% block content %}
   {% endblock content %}
+   <div class="container">
+      <div class="form-group">
+        <label for="text">Result:</label>
+        <textarea class="form-control" rows="10" id="text" name="text">
+          {% for sentence in summary_sentences %}
+            {{ sentence }}
+          {% endfor %}
+        </textarea>
+      </div>
+      <div>
+        <b><p></p></b>
+      </div>
+    </div>
+    <div class="box">
+        <center><div id="value"></div></center>
+    <div class="main">
+        <input type="range" min="0" max="100" value="50" class="slider" id="slider">
+    </div>
+    </div>
+    <style>
+        .box{
+            width:30%;
+            margin-left: 5%;
+            position: relative;
+        }
+        
+        
+    </style>
+    <script type="text/javascript">
+        var slider=document.getElementById('slider');
+        var val=document.getElementById("value");
+        val.innerHTML=slider.value;
+        slider.oninput=function(){
+            val.innerHTML=this.value;
+        }
+    </script>
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
       <ul class="nav navbar-nav">
