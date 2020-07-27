@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, request, url_for
 from article import Summarizer
 import gunicorn
+import shelve
 
 app = Flask(__name__)
 
@@ -8,6 +9,11 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return render_template("index.html")
+
+@app.route('/news')
+def news():
+    news_db = shelve.open('news.db')
+    return render_template("news.html", articles=news_db['data'])
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():

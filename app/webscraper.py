@@ -68,10 +68,15 @@ def scrape(url):
         return npr_scrape(url)
 
     article = Article(url)
-
-    article.download()
-    article.parse()
-
+    try:
+        article.download()
+        article.parse()
+    except:
+        return {'Title': "",
+                'Authors': "",
+                'Date': "",
+                'Text': "",
+                'Image': ""}
     return {'Title': article.title,
             'Authors': article.authors,
             'Date': article.publish_date,
