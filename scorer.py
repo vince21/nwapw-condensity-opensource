@@ -1,4 +1,3 @@
-from nltk.translate.bleu_score import corpus_bleu
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from app.article import Summarizer
@@ -6,6 +5,11 @@ import random
 from lexrank import STOPWORDS, LexRank
 import os
 import json
+import gensim
+from gensim.matutils import softcossim
+from gensim import corpora
+import gensim.downloader as api
+from gensim.utils import simple_preprocess
 
 class RandomSelector(Summarizer):
     def condense(self, percent):
@@ -116,21 +120,55 @@ def make_corpus_from_files(folder_path, write=False):
     return documents
 
 
-def score(summarizer, percent):
+def score_summarizer(summarizer, percent, vectorizer=None):
     documents = [summarizer.fullText, summarizer.condense(percent)]
 
-    count_vectorizer = CountVectorizer(stop_words='english')
-    sparse_matrix = count_vectorizer.fit_transform(documents)
+    if not vectorizer:
+        vectorizer = CountVectorizer(stop_words='english')
+    sparse_matrix = vectorizer.fit_transform(documents)
 
     return cosine_similarity(sparse_matrix)[0][1]
 
+
+def soft_score(summarizer, percent):
+    documents = [summarizer.fullText, summarizer.condense(percent)]
+
+    print('loading')
+    fasttext_model300 = api.load('fasttext-wiki-news-subwords-300')
+
+    dictionary = corpora.Dictionary([simple_preprocess(doc) for doc in documents])
+    print(dictionary)
+    # similarity_matrix = fasttext_model300.similarity_matrix(dictionary, tfidf=None, threshold=0.0,
+    #                                                         exponent=2.0, nonzero_limit=100)
+    #
+    # original_doc = dictionary.doc2bow(simple_preprocess(documents[0]))
+    # condensed_doc = dictionary.doc2bow(simple_preprocess(documents[1]))
+    #
+    # return softcossim(original_doc, condensed_doc, similarity_matrix)
+
+def find_optimal_params(summarizer):
+    results = []
+    print()
+    vector = CountVectorizer(stop_words='english')
+    for word_freq in range(0, 5, 1):
+        for vec in range(0, 5, 1):
+            for sentiment in range(0, 5, 1):
+                for similarity in range(0, 5, 1):
+                    out = f'\rWord frequency: {word_freq} Vector: {vec} Sentiment: {sentiment} Similarity: {similarity}'
+                    print(out, end='')
+                    summarizer.set_weights({'Word Frequency': word_freq,
+                                            'Vector': vec,
+                                            'Sentiment': sentiment,
+                                            'Similarity': similarity})
+                    score = score_summarizer(summarizer, summarizer.get_optimal_condense_percent(), vectorizer=vector)
+                    results.append(((word_freq, vec, sentiment, similarity), score))
+    print()
+    return results
 
 if __name__ == '__main__':
     # make_corpus_from_files('training_data', write=True)
     url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     summarizer = Summarizer(url)
-    print(f'Our summarizer: {score(summarizer, 0.2)}')
-    randomizer = RandomSelector(url)
-    print(f'Random sentence selection: {score(randomizer, 0.2)}')
-    lexranker = LexRanker(url)
-    print(f'LexRank selection: {score(lexranker, 0.2)}')
+    param_results = find_optimal_params(summarizer)
+    param_results.sort(key=lambda x: x[1])
+    print(param_results)
