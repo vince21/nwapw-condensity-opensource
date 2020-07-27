@@ -208,7 +208,7 @@ class Summarizer:
         """
         Constructor
         :param text: text input
-        :type percent: file or str
+        :type text: file or str
         """
         self.wnl = WordNetLemmatizer()
         self.fullText = ""
@@ -224,7 +224,7 @@ class Summarizer:
 
         # attributes that can be scraped (if a link is inputted)
         self.title = None
-        self.author = None
+        self.authors = None
         self.date = None
         self.image = None
         # check if text is file or link or raw
@@ -236,7 +236,7 @@ class Summarizer:
             scrape_results = scrape(text)
             self.fullText = scrape_results['Text']
             self.title = scrape_results['Title']
-            self.author = scrape_results['Author']
+            self.authors = scrape_results['Authors']
             self.image = scrape_results['Image']
         else:
             self.fullText = text
