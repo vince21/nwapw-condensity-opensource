@@ -236,7 +236,7 @@ class Summarizer:
             scrape_results = scrape(text)
             self.fullText = scrape_results['Text']
             self.title = scrape_results['Title']
-            self.author = scrape_results['Author']
+            self.author = scrape_results['Authors']
             self.image = scrape_results['Image']
         else:
             self.fullText = text

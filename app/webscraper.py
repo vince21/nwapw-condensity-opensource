@@ -84,7 +84,7 @@ if __name__ == '__main__':
     test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
-    print(f'Authors: {scrape_output["Author"]}')
+    print(f'Authors: {scrape_output["Authors"]}')
     print(f'Date: {scrape_output["Date"]}')
     print(f'Text: {scrape_output["Text"]}')
     print(f'Image: {scrape_output["Image"]}')
