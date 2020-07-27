@@ -5,11 +5,13 @@ import random
 from lexrank import STOPWORDS, LexRank
 import os
 import json
-import gensim
-from gensim.matutils import softcossim
 from gensim import corpora
-import gensim.downloader as api
 from gensim.utils import simple_preprocess
+from gensim.models import Word2Vec
+from gensim.similarities.docsim import SoftCosineSimilarity, SparseTermSimilarityMatrix
+from gensim.models.keyedvectors import WordEmbeddingSimilarityIndex
+from nltk import word_tokenize
+
 
 class RandomSelector(Summarizer):
     def condense(self, percent):
@@ -51,6 +53,7 @@ class RandomSelector(Summarizer):
         output = '\n\n'.join([x for x in output if x.strip() != ''])
 
         return output
+
 
 class LexRanker(Summarizer):
 
@@ -105,7 +108,6 @@ class LexRanker(Summarizer):
 
 
 def make_corpus_from_files(folder_path, write=False):
-
     print('Creating corpus...')
     documents = []
     dirname = os.path.dirname(__file__)
@@ -130,21 +132,33 @@ def score_summarizer(summarizer, percent, vectorizer=None):
     return cosine_similarity(sparse_matrix)[0][1]
 
 
-def soft_score(summarizer, percent):
+def create_model():
+    dirname = os.path.dirname(__file__)
+    with open(os.path.join(dirname, 'corpus.json'), 'r') as f:
+        articles = json.load(f)
+    # flatten
+    sentences = [item for article in articles for item in article]
+    sentences = [word_tokenize(sentence) for sentence in sentences]
+    model = Word2Vec(sentences)
+    return model
+
+
+def soft_score_summarizer(summarizer, percent):
     documents = [summarizer.fullText, summarizer.condense(percent)]
 
-    print('loading')
-    fasttext_model300 = api.load('fasttext-wiki-news-subwords-300')
-
     dictionary = corpora.Dictionary([simple_preprocess(doc) for doc in documents])
-    print(dictionary)
-    # similarity_matrix = fasttext_model300.similarity_matrix(dictionary, tfidf=None, threshold=0.0,
-    #                                                         exponent=2.0, nonzero_limit=100)
-    #
-    # original_doc = dictionary.doc2bow(simple_preprocess(documents[0]))
-    # condensed_doc = dictionary.doc2bow(simple_preprocess(documents[1]))
-    #
-    # return softcossim(original_doc, condensed_doc, similarity_matrix)
+
+    model = create_model()
+    termsim_index = WordEmbeddingSimilarityIndex(model.wv)
+
+    original_doc = dictionary.doc2bow(simple_preprocess(documents[0]))
+    condensed_doc = dictionary.doc2bow(simple_preprocess(documents[1]))
+
+    similarity_matrix = SparseTermSimilarityMatrix(termsim_index, dictionary)
+    docsim_index = SoftCosineSimilarity([original_doc], similarity_matrix)
+
+    return docsim_index[condensed_doc][0]
+
 
 def find_optimal_params(summarizer):
     results = []
@@ -165,10 +179,24 @@ def find_optimal_params(summarizer):
     print()
     return results
 
+
+def compare_scores(soft=False):
+    url = 'https://www.npr.org/2020/07/27/895772613/after-delays-republicans-rolled-out-a-new-pandemic-relief-bill-democrats-balked'
+    summarizer = Summarizer(url)
+    randomizer = RandomSelector(url)
+    lexranker = LexRanker(url)
+    if soft:
+        print(f'Our summarizer: {soft_score_summarizer(summarizer, 0.2)}')
+        print(f'Random sentences: {soft_score_summarizer(randomizer, 0.2)}')
+        print(f'LexRank: {soft_score_summarizer(lexranker, 0.2)}')
+    else:
+        print(f'Our summarizer: {score_summarizer(summarizer, 0.2)}')
+        print(f'Random sentences: {score_summarizer(randomizer, 0.2)}')
+        print(f'LexRank: {score_summarizer(lexranker, 0.2)}')
+
 if __name__ == '__main__':
     # make_corpus_from_files('training_data', write=True)
-    url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
-    summarizer = Summarizer(url)
-    param_results = find_optimal_params(summarizer)
-    param_results.sort(key=lambda x: x[1])
-    print(param_results)
+    compare_scores(soft=True)
+    # param_results = find_optimal_params(summarizer)
+    # param_results.sort(key=lambda x: x[1])
+    # print(param_results)
