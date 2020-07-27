@@ -20,7 +20,7 @@ def npr_scrape(url, write=False):
 
     title = soup.find('div', class_='storytitle').find('h1').text.strip()
 
-    author = soup.find('a', rel='author').text.strip()
+    author = soup.find('p', class_='byline__name byline__name--block').text.strip()
 
     date_text = soup.find('div', class_='dateblock').find('time')['datetime']
     date = datetime.strptime(date_text, '%Y-%m-%dT%X%z')

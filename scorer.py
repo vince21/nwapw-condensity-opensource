@@ -1,4 +1,3 @@
-from nltk.translate.bleu_score import corpus_bleu
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from app.article import Summarizer
@@ -6,6 +5,13 @@ import random
 from lexrank import STOPWORDS, LexRank
 import os
 import json
+from gensim import corpora
+from gensim.utils import simple_preprocess
+from gensim.models import Word2Vec
+from gensim.similarities.docsim import SoftCosineSimilarity, SparseTermSimilarityMatrix
+from gensim.models.keyedvectors import WordEmbeddingSimilarityIndex
+from nltk import word_tokenize
+
 
 class RandomSelector(Summarizer):
     def condense(self, percent):
@@ -47,6 +53,7 @@ class RandomSelector(Summarizer):
         output = '\n\n'.join([x for x in output if x.strip() != ''])
 
         return output
+
 
 class LexRanker(Summarizer):
 
@@ -101,7 +108,6 @@ class LexRanker(Summarizer):
 
 
 def make_corpus_from_files(folder_path, write=False):
-
     print('Creating corpus...')
     documents = []
     dirname = os.path.dirname(__file__)
@@ -116,21 +122,81 @@ def make_corpus_from_files(folder_path, write=False):
     return documents
 
 
-def score(summarizer, percent):
+def score_summarizer(summarizer, percent, vectorizer=None):
     documents = [summarizer.fullText, summarizer.condense(percent)]
 
-    count_vectorizer = CountVectorizer(stop_words='english')
-    sparse_matrix = count_vectorizer.fit_transform(documents)
+    if not vectorizer:
+        vectorizer = CountVectorizer(stop_words='english')
+    sparse_matrix = vectorizer.fit_transform(documents)
 
     return cosine_similarity(sparse_matrix)[0][1]
 
 
+def create_model():
+    dirname = os.path.dirname(__file__)
+    with open(os.path.join(dirname, 'corpus.json'), 'r') as f:
+        articles = json.load(f)
+    # flatten
+    sentences = [item for article in articles for item in article]
+    sentences = [word_tokenize(sentence) for sentence in sentences]
+    model = Word2Vec(sentences)
+    return model
+
+
+def soft_score_summarizer(summarizer, percent):
+    documents = [summarizer.fullText, summarizer.condense(percent)]
+
+    dictionary = corpora.Dictionary([simple_preprocess(doc) for doc in documents])
+
+    model = create_model()
+    termsim_index = WordEmbeddingSimilarityIndex(model.wv)
+
+    original_doc = dictionary.doc2bow(simple_preprocess(documents[0]))
+    condensed_doc = dictionary.doc2bow(simple_preprocess(documents[1]))
+
+    similarity_matrix = SparseTermSimilarityMatrix(termsim_index, dictionary)
+    docsim_index = SoftCosineSimilarity([original_doc], similarity_matrix)
+
+    return docsim_index[condensed_doc][0]
+
+
+def find_optimal_params(summarizer):
+    results = []
+    print()
+    vector = CountVectorizer(stop_words='english')
+    for word_freq in range(0, 5, 1):
+        for vec in range(0, 5, 1):
+            for sentiment in range(0, 5, 1):
+                for similarity in range(0, 5, 1):
+                    out = f'\rWord frequency: {word_freq} Vector: {vec} Sentiment: {sentiment} Similarity: {similarity}'
+                    print(out, end='')
+                    summarizer.set_weights({'Word Frequency': word_freq,
+                                            'Vector': vec,
+                                            'Sentiment': sentiment,
+                                            'Similarity': similarity})
+                    score = score_summarizer(summarizer, summarizer.get_optimal_condense_percent(), vectorizer=vector)
+                    results.append(((word_freq, vec, sentiment, similarity), score))
+    print()
+    return results
+
+
+def compare_scores(soft=False):
+    url = 'https://www.npr.org/2020/07/27/895772613/after-delays-republicans-rolled-out-a-new-pandemic-relief-bill-democrats-balked'
+    summarizer = Summarizer(url)
+    randomizer = RandomSelector(url)
+    lexranker = LexRanker(url)
+    if soft:
+        print(f'Our summarizer: {soft_score_summarizer(summarizer, 0.2)}')
+        print(f'Random sentences: {soft_score_summarizer(randomizer, 0.2)}')
+        print(f'LexRank: {soft_score_summarizer(lexranker, 0.2)}')
+    else:
+        print(f'Our summarizer: {score_summarizer(summarizer, 0.2)}')
+        print(f'Random sentences: {score_summarizer(randomizer, 0.2)}')
+        print(f'LexRank: {score_summarizer(lexranker, 0.2)}')
+
 if __name__ == '__main__':
     # make_corpus_from_files('training_data', write=True)
-    url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
-    summarizer = Summarizer(url)
-    print(f'Our summarizer: {score(summarizer, 0.2)}')
-    randomizer = RandomSelector(url)
-    print(f'Random sentence selection: {score(randomizer, 0.2)}')
-    lexranker = LexRanker(url)
-    print(f'LexRank selection: {score(lexranker, 0.2)}')
+    compare_scores(soft=True)
+    # param_results = find_optimal_params(summarizer)
+    # param_results.sort(key=lambda x: x[1])
+    # print(param_results)
