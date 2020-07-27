@@ -8,3 +8,4 @@ gensim
 newspaper3k
 flask
 gunicorn
+newsapi-python
