@@ -3,7 +3,7 @@
 Condensity is a Python project by Toby U., Spencer C., and Vincent W. that summarizes text with a novel extraction algorithm.
 
 ## Installation
-First, clone the repo and install nginx
+First, clone the repo
 #### Mac
 ```bash
 brew install nginx
