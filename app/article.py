@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from nltk.wsd import lesk
 import pandas as pd
 import string
-import re
+from urllib.parse import urlparse
 from webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
@@ -14,6 +14,17 @@ import numpy as np
 
 
 class Summarizer:
+
+    def sanitize_text(self):
+        sentences = sent_tokenize(self.fullText)
+        for sentence in sentences:
+            sentence = sentence.split('\n\n')
+            for segment in sentence:
+                if segment not in ['AD']:
+                    sentence = segment
+                    break
+
+        self.fullText = '\n'.join(sentences)
 
     def get_similarity(self, sentence, currentScore):
         """
@@ -218,28 +229,21 @@ class Summarizer:
         self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
-        # regex to test if the text is a link
-        link_regex = re.compile(
-            r'^(?:http|ftp)s?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-            r'localhost|'  # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-            r'(?::\d+)?'  # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
         # attributes that can be scraped (if a link is inputted)
         self.title = None
         self.authors = None
         self.date = None
         self.image = None
+
         # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
                     self.fullText += line
-        elif re.match(link_regex, text):
+        elif urlparse(text).scheme and urlparse(text).netloc:
             scrape_results = scrape(text)
             self.fullText = scrape_results['Text']
+            self.sanitize_text()
             self.title = scrape_results['Title']
             self.authors = scrape_results['Authors']
             self.image = scrape_results['Image']
@@ -300,8 +304,8 @@ class Summarizer:
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+    obj = Summarizer('https://www.washingtonpost.com/nation/2020/07/28/trump-coronavirus-misinformation-twitter/?hpid=hp_hp-banner-main_twitter-11am%3Ahomepage%2Fstory-ans')
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
-    # print(f'\nTime: {datetime.now() - start_time}')
+    print(f'\nTime: {datetime.now() - start_time}')
