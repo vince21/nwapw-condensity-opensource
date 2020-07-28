@@ -5,6 +5,7 @@ import time
 
 if __name__ == '__main__':
     while True:
+	print("Beginning Scrape...")
         newsapi = NewsApiClient(api_key='1f9393d3ba9d40c3832e87d9088b45cf')
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
@@ -25,4 +26,5 @@ if __name__ == '__main__':
 
         news_db['data'] = articles
         news_db.close()
+	print("Successfully Scraped")
         time.sleep(10800)
