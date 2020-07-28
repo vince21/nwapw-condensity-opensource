@@ -10,7 +10,7 @@ if __name__ == '__main__':
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
         articles = []
-        news_db = shelve.open('news.db')
+        news_db = shelve.open('news')
         news_db.clear()
         for article in top_headlines['articles']:
             try:
