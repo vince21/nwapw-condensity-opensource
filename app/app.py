@@ -13,6 +13,7 @@ def home():
 @app.route('/news')
 def news():
     news_db = shelve.open('news')
+    #news_db.clear()
     return render_template("news.html", articles=news_db['data'])
 
 @app.route('/results', methods=['GET', 'POST'])

@@ -2,6 +2,8 @@ from newsapi import NewsApiClient
 from article import Summarizer
 import shelve
 import time
+import os
+
 
 if __name__ == '__main__':
     while True:
@@ -10,8 +12,9 @@ if __name__ == '__main__':
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
         articles = []
+        os.remove('news')
         news_db = shelve.open('news')
-        news_db.clear()
+        #news_db.clear()
         for article in top_headlines['articles']:
             try:
                 summarizer = Summarizer(article['url'])
@@ -27,4 +30,4 @@ if __name__ == '__main__':
         news_db['data'] = articles
         news_db.close()
         print("Successfully Scraped")
-        time.sleep(10800)
+        time.sleep(10)
