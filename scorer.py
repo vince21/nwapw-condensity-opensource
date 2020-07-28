@@ -11,6 +11,7 @@ from gensim.models import Word2Vec
 from gensim.similarities.docsim import SoftCosineSimilarity, SparseTermSimilarityMatrix
 from gensim.models.keyedvectors import WordEmbeddingSimilarityIndex
 from nltk import word_tokenize
+from datetime import datetime
 
 
 class RandomSelector(Summarizer):
@@ -163,25 +164,37 @@ def soft_score_summarizer(summarizer, percent):
 def find_optimal_params(summarizer):
     results = []
     print()
+    TRIALS_PER_WEIGHT_SET = 2
+    starting_time = datetime.now()
     vector = CountVectorizer(stop_words='english')
-    for word_freq in range(0, 5, 1):
-        for vec in range(0, 5, 1):
-            for sentiment in range(0, 5, 1):
-                for similarity in range(0, 5, 1):
+    for word_freq in range(0, 45, 5):
+        word_freq /= 10.
+        for vec in range(0, 45, 5):
+            vec /= 10.
+            for sentiment in range(0, 45, 5):
+                sentiment /= 10.
+                for similarity in range(0, 45, 5):
+                    similarity /= 10.
                     out = f'\rWord frequency: {word_freq} Vector: {vec} Sentiment: {sentiment} Similarity: {similarity}'
+                    out += f' Time elapsed: {datetime.now() - starting_time}'
                     print(out, end='')
                     summarizer.set_weights({'Word Frequency': word_freq,
                                             'Vector': vec,
                                             'Sentiment': sentiment,
                                             'Similarity': similarity})
-                    score = score_summarizer(summarizer, summarizer.get_optimal_condense_percent(), vectorizer=vector)
+
+                    score = 0
+                    for i in range(TRIALS_PER_WEIGHT_SET):
+                        score += score_summarizer(summarizer, summarizer.get_optimal_condense_percent(),
+                                                  vectorizer=vector)
+                    score /= TRIALS_PER_WEIGHT_SET
                     results.append(((word_freq, vec, sentiment, similarity), score))
     print()
     return results
 
 
 def compare_scores(soft=False):
-    url = 'https://www.npr.org/2020/07/27/895772613/after-delays-republicans-rolled-out-a-new-pandemic-relief-bill-democrats-balked'
+    url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     summarizer = Summarizer(url)
     randomizer = RandomSelector(url)
     lexranker = LexRanker(url)
@@ -196,7 +209,8 @@ def compare_scores(soft=False):
 
 if __name__ == '__main__':
     # make_corpus_from_files('training_data', write=True)
-    compare_scores(soft=True)
-    # param_results = find_optimal_params(summarizer)
-    # param_results.sort(key=lambda x: x[1])
-    # print(param_results)
+    url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
+    summarizer = Summarizer(url)
+    param_results = find_optimal_params(summarizer)
+    param_results.sort(key=lambda x: x[1], reverse=True)
+    print(param_results)

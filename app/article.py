@@ -293,7 +293,7 @@ class Summarizer:
 
         # set default scoring weights
         self.weights = {'Word Frequency': 1,
-                        'Vector': 1,
+                        'Vector': 4,
                         'Sentiment': 1,
                         'Similarity': 1}
 

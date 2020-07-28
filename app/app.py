@@ -1,7 +1,8 @@
 from flask import Flask, render_template, redirect, request, url_for
-from article import Summarizer
+from app.article import Summarizer
 import gunicorn
 import shelve
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -20,10 +21,15 @@ def results():
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
+        if request.files['upload']:
+            file = request.files['upload']
+            file.filename = secure_filename(file.filename) # don't know if this is necessary since files aren't stored
+            text = file.read().decode("utf-8") # overrides text field input (change?)
+
 
         #catches empty inputs
         if not text:
-            return render_template('index.html', errormsg="Please enter text or a link")
+            return render_template('index.html', errormsg="Please enter text, a link, or upload a file")
         if not percent:
             return render_template('index.html', errormsg="Please enter a reduction percentage")
 
