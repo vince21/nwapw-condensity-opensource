@@ -3,7 +3,7 @@ from article import Summarizer
 import shelve
 import time
 import os
-
+from tagger import get_tags
 
 if __name__ == '__main__':
     while True:
@@ -14,16 +14,17 @@ if __name__ == '__main__':
         articles = []
         os.remove('news')
         news_db = shelve.open('news')
-        #news_db.clear()
+        # news_db.clear()
         for article in top_headlines['articles']:
             try:
                 summarizer = Summarizer(article['url'])
                 articles.append({'Title': article['title'],
-                    'Authors': article['author'],
-                    'Date': article['publishedAt'],
-                    'Text': summarizer.condense(100/len(summarizer.wordlist)),
-                    'Image': article['urlToImage'],
-                    'Url': article['url']})
+                                 'Authors': article['author'],
+                                 'Date': article['publishedAt'],
+                                 'Text': summarizer.condense(100 / len(summarizer.wordlist)),
+                                 'Image': article['urlToImage'],
+                                 'Url': article['url'],
+                                 'Tags': get_tags(article['title'], 2)})
             except:
                 pass
 

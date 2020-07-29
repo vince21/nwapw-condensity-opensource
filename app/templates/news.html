@@ -9,6 +9,11 @@
       <div class="col-sm-4">
         <h3>{{ article["Title"] }}</h3>
         <b>{{ article["Authors"] }}</b>
+        <span>
+            {% for tag in article["Tags"] %}
+              <p>{{ tag }}</p>
+            {% endfor %}
+        </span>
         <p>{{ article["Text"] }}</p>
       </div>
       <div class="col-sm-6">
