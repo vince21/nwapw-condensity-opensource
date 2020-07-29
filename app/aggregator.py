@@ -13,7 +13,7 @@ if __name__ == '__main__':
                                                   country='us')
         articles = []
         os.remove('news')
-        news_db = shelve.open('news')
+        news_db = shelve.open('news.db')
         #news_db.clear()
         for article in top_headlines['articles']:
             try:
