@@ -1,11 +1,10 @@
 from flask import Flask, render_template, redirect, request, url_for
-from app.article import Summarizer
+from article import Summarizer
 import gunicorn
 import shelve
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def home():

@@ -23,11 +23,12 @@ if __name__ == '__main__':
                     'Date': article['publishedAt'],
                     'Text': summarizer.condense(100/len(summarizer.wordlist)),
                     'Image': article['urlToImage'],
-                    'Url': article['url']})
+                    'Url': article['url'],
+                    'Source': article['source']['name']})
             except:
                 pass
 
         news_db['data'] = articles
         news_db.close()
         print("Successfully Scraped")
-        time.sleep(10)
+        time.sleep(3600)
