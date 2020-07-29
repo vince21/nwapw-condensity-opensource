@@ -11,12 +11,12 @@
         <b>{{ article["Authors"] }}</b><br>
         <p>{{ article["Date"][0:10] }}<br>
         {{ article["Date"][11:-1] }}</p>
+        <p>{{ article["Text"] }}</p>
         <span>
             {% for tag in article["Tags"] %}
-              <p>{{ tag }}</p>
+              <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'" type="button">{{ tag }}</button>
             {% endfor %}
         </span>
-        <p>{{ article["Text"] }}</p>
       </div>
       <div class="col-sm-6">
         <br>

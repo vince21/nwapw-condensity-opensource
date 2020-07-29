@@ -12,7 +12,7 @@ if __name__ == '__main__':
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
         articles = []
-        os.remove('news.db')
+        os.remove('news')
         news_db = shelve.open('news')
         # news_db.clear()
         for article in top_headlines['articles']:
@@ -25,7 +25,7 @@ if __name__ == '__main__':
                     'Image': article['urlToImage'],
                     'Url': article['url'],
                     'Source': article['source']['name'],
-                    'Tags': get_tags(article['title'], 2)})
+                    'Tags': get_tags(article['title'], 4)})
             except:
                 pass
 
