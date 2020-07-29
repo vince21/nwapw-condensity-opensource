@@ -7,8 +7,10 @@
     <hr>
     <div class="row">
       <div class="col-sm-4">
-        <h3>{{ article["Title"] }}</h3>
-        <b>{{ article["Authors"] }}</b>
+        <h3><a href={{ article["Url"] }}>{{ article["Title"] }}</a></h3>
+        <b>{{ article["Authors"] }}</b><br>
+        <p>{{ article["Date"][0:10] }}<br>
+        {{ article["Date"][11:-1] }}</p>
         <span>
             {% for tag in article["Tags"] %}
               <p>{{ tag }}</p>
@@ -20,6 +22,7 @@
         <br>
         <br>
         <img src={{ article["Image"] }} width=700 height=auto>
+        <a href={{ article["Image"] }}>view original</a>
       </div>
     </div>
     {% endfor %}

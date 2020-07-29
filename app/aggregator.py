@@ -12,23 +12,24 @@ if __name__ == '__main__':
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
         articles = []
-        os.remove('news')
+        os.remove('news.db')
         news_db = shelve.open('news')
         # news_db.clear()
         for article in top_headlines['articles']:
             try:
                 summarizer = Summarizer(article['url'])
                 articles.append({'Title': article['title'],
-                                 'Authors': article['author'],
-                                 'Date': article['publishedAt'],
-                                 'Text': summarizer.condense(100 / len(summarizer.wordlist)),
-                                 'Image': article['urlToImage'],
-                                 'Url': article['url'],
-                                 'Tags': get_tags(article['title'], 2)})
+                    'Authors': article['author'],
+                    'Date': article['publishedAt'],
+                    'Text': summarizer.condense(100/len(summarizer.wordlist)),
+                    'Image': article['urlToImage'],
+                    'Url': article['url'],
+                    'Source': article['source']['name'],
+                    'Tags': get_tags(article['title'], 2)})
             except:
                 pass
 
         news_db['data'] = articles
         news_db.close()
         print("Successfully Scraped")
-        time.sleep(10)
+        time.sleep(3600)
