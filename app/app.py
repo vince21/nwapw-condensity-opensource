@@ -41,7 +41,7 @@ def results():
         summary = Summarizer(text)
         summary_text = summary.condense(percent)
         metrics = summary.condense_metrics(summary_text)
-        summary_sentences = [sentence.strip() for sentence in summary_text.split('\n')]
+        summary_sentences = [sentence.strip() for sentence in summary_text.split('\n') if sentence.strip() != '']
         return render_template('results.html', summary_sentences=summary_sentences, metrics=metrics)
     else:
         return render_template('index.html')
