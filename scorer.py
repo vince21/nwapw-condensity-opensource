@@ -1,4 +1,3 @@
-from nltk.translate.bleu_score import corpus_bleu
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from app.article import Summarizer

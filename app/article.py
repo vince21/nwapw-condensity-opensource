@@ -5,7 +5,7 @@ from nltk.wsd import lesk
 import pandas as pd
 import string
 import re
-from app.webscraper import scrape
+from webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
 from nltk.stem import WordNetLemmatizer
