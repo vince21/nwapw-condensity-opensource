@@ -20,7 +20,7 @@ def npr_scrape(url, write=False):
 
     title = soup.find('div', class_='storytitle').find('h1').text.strip()
 
-    author = soup.find('a', rel='author').text.strip()
+    author = soup.find('p', class_='byline__name byline__name--block').text.strip()
 
     date_text = soup.find('div', class_='dateblock').find('time')['datetime']
     date = datetime.strptime(date_text, '%Y-%m-%dT%X%z')
@@ -45,12 +45,39 @@ def npr_scrape(url, write=False):
                    'Text': raw_text,
                    'Image': images[0]
                    }
-    """
+
     if write:
         modified_title = '-'.join(title.lower().split(' '))
         with open(f'scraped-text/{modified_title}.txt', 'w') as f:
             f.write(raw_text)
-    """
+
+    return output_dict
+
+
+def wapo_scrape(url):
+
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    title = soup.find('h1', class_='font--headline').text.strip()
+
+    authors = soup.find_all('span', class_='author-name')
+    authors = [author.text.strip() for author in authors]
+
+    body_text = soup.find_all('p', class_='font--body')
+    raw_text = '\n'.join([tag.parent.text.strip() for tag in body_text])
+
+    article = Article(url)
+    article.download()
+    article.parse()
+
+    output_dict = {'Title': title,
+                   'Authors': authors,
+                   'Date': article.publish_date,
+                   'Text': raw_text,
+                   'Image': article.top_image
+                   }
+
     return output_dict
 
 
@@ -66,12 +93,19 @@ def scrape(url):
     domain = urlparse(url).netloc.split('.')[1]
     if domain == 'npr':
         return npr_scrape(url)
+    elif domain == 'washingtonpost':
+        return wapo_scrape(url)
 
     article = Article(url)
-
-    article.download()
-    article.parse()
-
+    try:
+        article.download()
+        article.parse()
+    except:
+        return {'Title': "",
+                'Authors': "",
+                'Date': "",
+                'Text': "",
+                'Image': ""}
     return {'Title': article.title,
             'Authors': article.authors,
             'Date': article.publish_date,
@@ -80,12 +114,10 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    """
-    test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
+    test_url = 'https://www.washingtonpost.com/nation/2020/07/28/trump-coronavirus-misinformation-twitter/?hpid=hp_hp-banner-main_twitter-11am%3Ahomepage%2Fstory-ans'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Authors"]}')
     print(f'Date: {scrape_output["Date"]}')
     print(f'Text: {scrape_output["Text"]}')
     print(f'Image: {scrape_output["Image"]}')
-    """

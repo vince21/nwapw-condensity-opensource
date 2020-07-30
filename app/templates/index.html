@@ -7,10 +7,10 @@
         {{ errormsg }}
     </div>
     {% endif %}
-    <form method="POST" action="/results" id="data">
+    <form method="POST" action="/results" id="data" enctype="multipart/form-data">
       <div class="form-group">
-        <label for="text">Enter Text or a News Article Link:</label>
-        <textarea class="form-control" rows="7" id="text" name="text"></textarea>
+        <label for="text">Enter Text, a News Article Link, or a .txt file:</label><input type="file" id="upload" name="upload" accept="text/*">
+        <textarea class="form-control" rows="7" id="text" name="text" required></textarea>
       </div>
       <div class="form-group">
         <label for="percent" id="percent-value">Condense to %: </label><br>
@@ -47,6 +47,14 @@
        $( "#submit" ).replaceWith("<button class=\"btn btn-lg\" type=\"button\" disabled><span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span>Loading...</button>");
      });
 
+     $('input[type="file"]').change(function(e){
+       var fileName = e.target.files[0].name;
+       var tmppath = URL.createObjectURL(e.target.files[0]);
+       console.log(tmppath);
+       $.get(tmppath, function(data) {
+         $( "#text" ).replaceWith("<textarea class=\"form-control\" rows=\"7\" id=\"text\" name=\"text\" required>" + data + "</textarea>");
+       }, 'text');
+     });
     });
   </script>
 {% endblock content %}

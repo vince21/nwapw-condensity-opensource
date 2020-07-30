@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from nltk.wsd import lesk
 import pandas as pd
 import string
-import re
+from urllib.parse import urlparse
 from webscraper import scrape
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
@@ -14,6 +14,17 @@ import numpy as np
 
 
 class Summarizer:
+
+    def sanitize_text(self):
+        sentences = sent_tokenize(self.fullText)
+        for sentence in sentences:
+            sentence = sentence.split('\n\n')
+            for segment in sentence:
+                if segment not in ['AD']:
+                    sentence = segment
+                    break
+
+        self.fullText = '\n'.join(sentences)
 
     def get_similarity(self, sentence, currentScore):
         """
@@ -25,12 +36,15 @@ class Summarizer:
         """
         index = self.sentences.index(sentence)
 
-        if index != len(self.sentences)-1:
-            scores = [fuzz.token_sort_ratio(sim, sentence) for sim in self.sentences[index+1:]]
-            adjustedScore = -max(scores)/100
-            if adjustedScore < -0.85: return 2 * adjustedScore #heavily decrecrement highly similar sentences
-            elif adjustedScore < -0.6: return adjustedScore #decrement the score of somewhat similar sentences
-            else: return 0 #ignore low levels of similarity
+        if index != len(self.sentences) - 1:
+            scores = [fuzz.token_sort_ratio(sim, sentence) for sim in self.sentences[index + 1:]]
+            adjustedScore = -max(scores) / 100
+            if adjustedScore < -0.85:
+                return 2 * adjustedScore  # heavily decrecrement highly similar sentences
+            elif adjustedScore < -0.6:
+                return adjustedScore  # decrement the score of somewhat similar sentences
+            else:
+                return 0  # ignore low levels of similarity
         else:
             return 0
 
@@ -53,7 +67,7 @@ class Summarizer:
             :return: The score of the given synset (# of times it appears in the text)
             :rtype: int
         """
-        if synset is None: # Nones should be removed, leaving it just in case
+        if synset is None:  # Nones should be removed, leaving it just in case
             return 0
         else:
             return len(self.wordDF[self.wordDF['Synsets'] == synset])
@@ -74,9 +88,9 @@ class Summarizer:
                 score += sim[1]
         return score
 
-
-    def set_weights(self):
-        pass
+    def set_weights(self, new_weights):
+        for key, value in new_weights.items():
+            self.weights[key] = value
 
     def score_sentence(self, sentence):
         """
@@ -91,23 +105,22 @@ class Summarizer:
         score = 0
         for word in words:
             word_synset = lesk(words, word)
-            score += self.score_synset(word_synset)
-            #if the word is in the vocab
+            score += self.score_synset(word_synset) * self.weights['Word Frequency']
+            # if the word is in the vocab
             if word in self.wordlist:
-                score += self.score_word2vec(word)
+                score += self.score_word2vec(word) * self.weights['Vector']
         score /= len(words)
 
         # adding points if sentence matches overall sentiment of text
 
-        # TODO: adjust these values to be reasonable within context of word score (is +0.5 too much/little?)
         ovr_sentiment = self.get_sentiment(self.fullText)
         if ovr_sentiment > 0.05 and self.sentencesDF.at[sentence, 'Sentiment'] > 0.4:  # positive
-            score += 0.5
+            score += 1 * self.weights['Sentiment']
         elif ovr_sentiment < -0.05 and self.sentencesDF.at[sentence, 'Sentiment'] < -0.4:  # negative
-            score += 0.5
+            score += 1 * self.weights['Sentiment']
 
-        #subtracting points based on high similarity to other sentences
-        score += self.get_similarity(sentence,score)
+        # subtracting points based on high similarity to other sentences
+        score += self.get_similarity(sentence, score) * self.weights['Similarity']
         return score
 
     def condense(self, percent=None):
@@ -174,7 +187,6 @@ class Summarizer:
             target_sentences = 25
         return target_sentences / len(self.sentences)
 
-
     def condense_metrics(self, condensed_text):
         """
         Gets info on how much the text was condensed by.
@@ -184,14 +196,14 @@ class Summarizer:
         :rtype: dict
         """
         og_info = {'Sentences': len(self.sentences),
-                         'Words': len(self.all_words),
-                         'Characters': len(self.fullText)}
+                   'Words': len(self.all_words),
+                   'Characters': len(self.fullText)}
         condensed_info = {'Sentences': len(sent_tokenize(condensed_text)),
                           'Words': len(word_tokenize(condensed_text)),
                           'Characters': len(condensed_text)}
 
         info = {k: og_info[k] - condensed_info[k] for k in og_info.keys()}
-        percentage_info = {'% ' + k: 100 * (1 - round(condensed_info[k]/og_info[k], 4)) for k in og_info.keys()}
+        percentage_info = {'% ' + k: 100 * (1 - round(condensed_info[k] / og_info[k], 4)) for k in og_info.keys()}
         info.update(percentage_info)
         info['Total %'] = round(sum(percentage_info.values()) / len(percentage_info.values()), 2)
         return info
@@ -208,7 +220,7 @@ class Summarizer:
                 'Text': self.fullText,
                 'Image': self.image}
 
-    def __init__(self, text):
+    def __init__(self, text, weights=None):
         """
         Constructor
         :param text: text input
@@ -217,28 +229,21 @@ class Summarizer:
         self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
-        # regex to test if the text is a link
-        link_regex = re.compile(
-            r'^(?:http|ftp)s?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
-            r'localhost|'  # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-            r'(?::\d+)?'  # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
         # attributes that can be scraped (if a link is inputted)
         self.title = None
         self.authors = None
         self.date = None
         self.image = None
+
         # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
             with open(text) as f:
                 for line in f:
                     self.fullText += line
-        elif re.match(link_regex, text):
+        elif urlparse(text).scheme and urlparse(text).netloc:
             scrape_results = scrape(text)
             self.fullText = scrape_results['Text']
+            self.sanitize_text()
             self.title = scrape_results['Title']
             self.authors = scrape_results['Authors']
             self.image = scrape_results['Image']
@@ -291,12 +296,16 @@ class Summarizer:
         self.vec = Word2Vec([self.wordlist], min_count=1)
 
         # set default scoring weights
+        self.weights = {'Word Frequency': 1,
+                        'Vector': 4,
+                        'Sentiment': 1,
+                        'Similarity': 1}
 
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
+    obj = Summarizer('https://www.washingtonpost.com/nation/2020/07/28/trump-coronavirus-misinformation-twitter/?hpid=hp_hp-banner-main_twitter-11am%3Ahomepage%2Fstory-ans')
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
-    #print(f'\nTime: {datetime.now() - start_time}')
+    print(f'\nTime: {datetime.now() - start_time}')

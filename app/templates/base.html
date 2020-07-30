@@ -3,7 +3,6 @@
 <head>
   <title>Condensity</title>
   <link rel="icon" href="../static/img/file-minus-fill.svg">
-  <link rel="stylesheet" href="../static/css/style.css">
   <meta charset="utf-8">
   <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -13,25 +12,33 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
+
   <!--pace-->
   <script src="../static/js/pace.js"></script>
   <link href="../static/css/loading.css" rel="stylesheet"/>
 
+
+  <!--custom css-->
+  <link rel="stylesheet" href="../static/css/style.css">
+
 </head>
 
 <body>
-  <div class="jumbotron text-center">
-    <h1>Condensity</h1>
-    <!-- LOGO GOES HERE <img src="../static/img/file-minus.svg" alt="" width="80" height="80" title="Bootstrap"> -->
-    <p>summarize text instantly</p>
-  </div>
+  <!--move inline style to custom stylesheet?-->
+  <a href="/" id="no-highlight" style="color: inherit; text-decoration: inherit;">
+    <div class="jumbotron text-center">
+      <h1>Condensity</h1>
+      <!-- LOGO GOES HERE <img src="../static/img/file-minus.svg" alt="" width="80" height="80" title="Bootstrap"> -->
+      <p>summarize text instantly</p>
+    </div>
+  </a>
   {% block content %}
   {% endblock content %}
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
       <ul class="nav navbar-nav">
-        <li class="active"><a class="navbar-brand" href="#">Condensity</a></li>
-        <li><a href="#">Options</a></li>
+        <li class="active"><a class="navbar-brand" href="/">Condensity</a></li>
+        <li><a href="/news">Newsfeed</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#"> About</a></li>

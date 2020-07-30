@@ -1,23 +1,35 @@
 from flask import Flask, render_template, redirect, request, url_for
 from article import Summarizer
 import gunicorn
+import shelve
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def home():
     return render_template("index.html")
+
+@app.route('/news')
+def news():
+    news_db = shelve.open('news')
+    #news_db.clear()
+    return render_template("news.html", articles=news_db['data'])
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
+        if request.files['upload']:
+            file = request.files['upload']
+            file.filename = secure_filename(file.filename) # don't know if this is necessary since files aren't stored
+            text = file.read().decode("utf-8") # overrides text field input (change?)
+
 
         #catches empty inputs
         if not text:
-            return render_template('index.html', errormsg="Please enter text or a link")
+            return render_template('index.html', errormsg="Please enter text, a link, or upload a file")
         if not percent:
             return render_template('index.html', errormsg="Please enter a reduction percentage")
 
@@ -29,7 +41,7 @@ def results():
         summary = Summarizer(text)
         summary_text = summary.condense(percent)
         metrics = summary.condense_metrics(summary_text)
-        summary_sentences = [sentence.strip() for sentence in summary_text.split('\n')]
+        summary_sentences = [sentence.strip() for sentence in summary_text.split('\n') if sentence.strip() != '']
         return render_template('results.html', summary_sentences=summary_sentences, metrics=metrics)
     else:
         return render_template('index.html')
