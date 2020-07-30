@@ -13,8 +13,23 @@
         <textarea class="form-control" rows="7" id="text" name="text" required></textarea>
       </div>
       <div class="form-group">
-        <label for="percent">Condense to %:</label><br>
-        <input type="number" id="percent" name="percent" min="1" max="100" required>
+        <label for="percent" id="percent-value">Condense to %: </label><br>
+        <input type="range" min="1" max="100" value="{{
+                request.form['percent'] if request.form['percent'] else 50
+                }}" class="slider" id="percent" name="percent">
+        <script type="text/javascript">
+          const slider = document.getElementById('percent');
+          const val = document.getElementById("percent-value");
+          if (sessionStorage.getItem('percent')) {
+              slider.value = sessionStorage.getItem('percent');
+          }
+          slider.addEventListener('input', function() {
+              sessionStorage.setItem('percent', slider.value);
+              val.innerHTML = 'Condense to %: ' + slider.value;
+          });
+          val.innerHTML += slider.value
+        </script>
+
       </div>
       <div class="text-center">
         <button class="btn btn-lg" type="submit" id="submit">
