@@ -18,15 +18,18 @@
                 request.form['percent'] if request.form['percent'] else 50
                 }}" class="slider" id="percent" name="percent">
         <script type="text/javascript">
-            const slider = document.getElementById('percent');
-            const val = document.getElementById("percent-value");
-            console.log(slider.value)
-            val.innerHTML += slider.value
-            setDisplayValue = function(){
-                val.innerHTML = "Condense to %: " + this.value;
-            }
-            slider.oninput = setDisplayValue
+          const slider = document.getElementById('percent');
+          const val = document.getElementById("percent-value");
+          if (sessionStorage.getItem('percent')) {
+              slider.value = sessionStorage.getItem('percent');
+          }
+          slider.addEventListener('input', function() {
+              sessionStorage.setItem('percent', slider.value);
+              val.innerHTML = 'Condense to %: ' + slider.value;
+          });
+          val.innerHTML += slider.value
         </script>
+
       </div>
       <div class="text-center">
         <button class="btn btn-lg" type="submit" id="submit">
