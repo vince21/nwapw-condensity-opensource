@@ -9,7 +9,8 @@
     {% endif %}
     <form method="POST" action="/results" id="data" enctype="multipart/form-data">
       <div class="form-group">
-        <label for="text">Enter Text, a News Article Link, or a .txt file:</label><input type="file" id="upload" name="upload" accept="text/*">
+        <label for="text">Enter Text, a News Article Link, or a .txt file:</label>
+        <input type="file" id="upload" name="upload" accept="text/*">
         <textarea class="form-control" rows="7" id="text" name="text" required></textarea>
       </div>
       <div class="form-group">
@@ -20,14 +21,15 @@
         <script type="text/javascript">
           const slider = document.getElementById('percent');
           const val = document.getElementById("percent-value");
-          if (sessionStorage.getItem('percent')) {
-              slider.value = sessionStorage.getItem('percent');
-          }
-          slider.addEventListener('input', function() {
-              sessionStorage.setItem('percent', slider.value);
+          const setSlider = function() {
               val.innerHTML = 'Condense to %: ' + slider.value;
+          };
+          setSlider();
+          slider.oninput = setSlider;
+          // handles BFCache ("back" button on browser)
+          $(window).bind('pageshow', function() {
+              setSlider();
           });
-          val.innerHTML += slider.value
         </script>
 
       </div>
