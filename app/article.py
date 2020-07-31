@@ -17,14 +17,20 @@ class Summarizer:
 
     def sanitize_text(self):
         sentences = sent_tokenize(self.fullText)
+        good_sentences = []
         for sentence in sentences:
-            sentence = sentence.split('\n\n')
-            for segment in sentence:
-                if segment not in ['AD']:
-                    sentence = segment
-                    break
+            valid_sentence = True
+            paren_variants = ['(', '[', '{', '-', '—']
+            words = word_tokenize(sentence)
+            if words[:3] == [word.upper() for word in words[:3]]:
+                valid_sentence = False
 
-        self.fullText = '\n'.join(sentences)
+            elif sentence[0] in paren_variants:
+                valid_sentence = False
+            if valid_sentence:
+                good_sentences.append(sentence)
+
+        self.fullText = '\n'.join(good_sentences)
 
     def get_similarity(self, sentence, currentScore):
         """
@@ -121,6 +127,13 @@ class Summarizer:
 
         # subtracting points based on high similarity to other sentences
         score += self.get_similarity(sentence, score) * self.weights['Similarity']
+
+        # subtracting points for short sentences (with the goal of removing subtitles/similar)
+        if len(words) <= 1:
+            score /= 20
+        elif len(words) == 2:
+            score /= 10
+
         return score
 
     def condense(self, percent=None):
@@ -234,6 +247,7 @@ class Summarizer:
         self.authors = None
         self.date = None
         self.image = None
+        self.domain = None
 
         # check if text is file or link or raw
         if text.split('.')[-1] == 'txt':
@@ -247,6 +261,7 @@ class Summarizer:
             self.title = scrape_results['Title']
             self.authors = scrape_results['Authors']
             self.image = scrape_results['Image']
+            self.domain = urlparse(text).netloc
         else:
             self.fullText = text
 
@@ -302,9 +317,11 @@ class Summarizer:
                         'Similarity': 1}
 
 
+
+
 if __name__ == '__main__':
     start_time = datetime.now()
-    obj = Summarizer('https://www.washingtonpost.com/nation/2020/07/28/trump-coronavirus-misinformation-twitter/?hpid=hp_hp-banner-main_twitter-11am%3Ahomepage%2Fstory-ans')
+    obj = Summarizer('https://www.bloomberg.com/news/articles/2020-07-31/trump-to-order-china-s-bytedance-to-sell-tiktok-u-s-operations')
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
