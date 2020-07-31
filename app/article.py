@@ -24,7 +24,6 @@ class Summarizer:
             words = word_tokenize(sentence)
             if words[:3] == [word.upper() for word in words[:3]]:
                 valid_sentence = False
-
             elif sentence[0] in paren_variants:
                 valid_sentence = False
             if valid_sentence:
@@ -321,7 +320,7 @@ class Summarizer:
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    obj = Summarizer('https://www.bloomberg.com/news/articles/2020-07-31/trump-to-order-china-s-bytedance-to-sell-tiktok-u-s-operations')
+    obj = Summarizer('https://www.bbc.com/news/world-us-canada-53606918')
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
