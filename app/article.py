@@ -218,6 +218,7 @@ class Summarizer:
         percentage_info = {'% ' + k: 100 * (1 - round(condensed_info[k] / og_info[k], 4)) for k in og_info.keys()}
         info.update(percentage_info)
         info['Total %'] = round(sum(percentage_info.values()) / len(percentage_info.values()), 2)
+        info = {k: max(v, 0) for k, v in info.items()}
         return info
 
     def get_article_info(self):
