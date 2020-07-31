@@ -12,9 +12,6 @@ if __name__ == '__main__':
         top_headlines = newsapi.get_top_headlines(language='en',
                                                   country='us')
         articles = []
-        os.remove('news')
-        news_db = shelve.open('news')
-        # news_db.clear()
         for article in top_headlines['articles']:
             try:
                 summarizer = Summarizer(article['url'])
@@ -30,7 +27,8 @@ if __name__ == '__main__':
                     'Tags': get_tags(article['title'], 4)})
             except:
                 pass
-
+        news_db = shelve.open('news')
+        news_db.clear()
         news_db['data'] = articles
         news_db.close()
         print("Successfully Scraped")
