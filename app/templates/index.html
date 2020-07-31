@@ -11,8 +11,22 @@
       <div class="form-group">
         <label for="text">Enter Text, a News Article Link, or a .txt file:</label>
         <input type="file" id="upload" name="upload" accept="text/*">
-        <textarea class="form-control" rows="7" id="text" name="text" required></textarea>
+        <textarea class="form-control" rows="7" id="text" name="text" maxlength="50000" required></textarea>
       </div>
+      <div class="alert alert-danger" id="text-too-long" style="display: none;">
+        <p>The maximum text length is 50000 characters. Try using a shorter text or splitting it up into multiple
+          requests.</p>
+      </div>
+      <script type="text/javascript">
+        const textfield = document.getElementById('text');
+        textfield.oninput = function() {
+          if (this.value.length >= this.maxLength) {
+            document.getElementById('text-too-long').style.display = 'block';
+          } else {
+           document.getElementById('text-too-long').style.display = 'none';
+          }
+        };
+      </script>
       <div class="form-group">
         <label for="percent" id="percent-value">Condense to %: </label><br>
         <input type="range" min="1" max="100" value="{{
@@ -53,11 +67,13 @@
      $('input[type="file"]').change(function(e){
        var fileName = e.target.files[0].name;
        var tmppath = URL.createObjectURL(e.target.files[0]);
-       console.log(tmppath);
        $.get(tmppath, function(data) {
-         $( "#text" ).replaceWith("<textarea class=\"form-control\" rows=\"7\" id=\"text\" name=\"text\" required>" + data + "</textarea>");
+           const textfield = document.getElementById('text');
+           textfield.value = data.substring(0, Math.min(data.length, textfield.maxLength));
+           textfield.dispatchEvent(new Event('input'));
        }, 'text');
      });
+
     });
   </script>
 {% endblock content %}
