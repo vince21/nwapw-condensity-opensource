@@ -32,6 +32,27 @@
       <p>summarize text instantly</p>
     </div>
   </a>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <ul class="nav navbar-nav">
+        <li><a class="navbar-brand" href="/">Condensity</a></li>
+        <li><a href="/news">Newsfeed</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"> About</a></li>
+        <li><a href="#"><span class="glyphicon glyphicon-envelope"></span> Contact Us</a></li>
+      </ul>
+    </div>
+  </nav>
+  <script>
+    $(function () {
+        $('li').each(function() {
+            if ($(this).find('a').prop('href') == window.location.href) {
+                $(this).addClass('active');
+            }
+        });
+    });
+  </script>
   {% block content %}
   {% endblock content %}
 </body>
