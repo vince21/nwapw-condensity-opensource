@@ -18,10 +18,12 @@ if __name__ == '__main__':
         for article in top_headlines['articles']:
             try:
                 summarizer = Summarizer(article['url'])
+                condensed_text = summarizer.condense(100/len(summarizer.wordlist))
                 articles.append({'Title': article['title'],
                     'Authors': article['author'],
                     'Date': article['publishedAt'],
-                    'Text': summarizer.condense(100/len(summarizer.wordlist)),
+                    'Text': condensed_text,
+                    'Metrics': summarizer.condense_metrics(condensed_text),
                     'Image': article['urlToImage'],
                     'Url': article['url'],
                     'Source': article['source']['name'],
