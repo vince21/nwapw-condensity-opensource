@@ -1,25 +1,34 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container">
-      <div class="form-group">
-        <label for="text">Result:</label>
-        <textarea class="form-control" rows="10" id="text" name="text">
-          {% for sentence in summary_sentences %}
-            {{ sentence }}
-          {% endfor %}
-        </textarea>
-      </div>
-      <div>
-        <b><p>Condensed by {{ metrics['Total %'] }}% ({{ metrics['Sentences'] }} sentences,
-            {{ metrics['Words'] }} words,
-            {{ metrics['Characters'] }} characters removed)</p></b>
-      </div>
+  {% if warnings %}
+  <div class="container">
+    <div class="alert alert-danger">
+      {% for warning in warnings %}
+        <p>{{ warning}}</p>
+      {% endfor %}
     </div>
-    <br>
-    <div class="text-center">
-      <button class="btn btn-lg" type="submit" id="submit" onclick="location.href='/'">
-        Back
-      </button>
+  </div>
+  {% endif %}
+  <div class="container">
+    <div class="form-group">
+      <label for="text">Result:</label>
+      <textarea class="form-control" rows="10" id="text" name="text">
+        {% for sentence in summary_sentences %}
+          {{ sentence }}
+        {% endfor %}
+      </textarea>
     </div>
+    <div>
+      <b><p>Condensed by {{ metrics['Total %'] }}% ({{ metrics['Sentences'] }} sentences,
+          {{ metrics['Words'] }} words,
+          {{ metrics['Characters'] }} characters removed)</p></b>
+    </div>
+  </div>
+  <br>
+  <div class="text-center">
+    <button class="btn btn-lg" type="submit" id="submit" onclick="location.href='/'">
+      Back
+    </button>
+  </div>
 {% endblock content %}
