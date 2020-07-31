@@ -17,6 +17,9 @@
               <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'" type="button">{{ tag }}</button>
             {% endfor %}
         </span>
+        <b><p>Condensed by {{ article["Metrics"]['Total %'] }}% ({{ article["Metrics"]['Sentences'] }} sentences,
+            {{ article["Metrics"]['Words'] }} words,
+            {{ article["Metrics"]['Characters'] }} characters removed)</p></b>
       </div>
       <div class="col-sm-6">
         <br>
