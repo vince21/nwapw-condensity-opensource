@@ -24,8 +24,10 @@
       <div class="col-sm-6">
         <br>
         <br>
+        {% if article["Image"] %}
         <img src={{ article["Image"] }} width=700 height=auto>
         <a href={{ article["Image"] }}>view original</a>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
