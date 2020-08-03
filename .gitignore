@@ -8,3 +8,5 @@
 #
 __pycache__/
 app/news
+todo.txt
+app/zappa_settings.json

@@ -3,6 +3,7 @@ from article import Summarizer
 import gunicorn
 import shelve
 from werkzeug.utils import secure_filename
+import boto3
 
 app = Flask(__name__)
 
@@ -11,6 +12,14 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    s3 = boto3.resource('s3')
+    if request.method == "POST":
+        email = request.form["email"]
+        s3.Bucket('nwapw-users').put_object(Key=email, Body=email)
+        return render_template("news.html")
+    return render_template("500.html")
 
 @app.route('/news')
 def news():
