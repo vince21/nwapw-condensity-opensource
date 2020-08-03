@@ -1,1 +1,1 @@
-# exists so that app is trated as package
+# exists so that app is treated as package

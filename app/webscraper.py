@@ -74,15 +74,9 @@ def wapo_scrape(url):
     body_text = soup.find_all('p', class_='font--body')
     raw_text = '\n'.join([tag.parent.text.strip() for tag in body_text])
 
-    article = Article(url)
-    article.download()
-    article.parse()
-
     output_dict = {'Title': title,
                    'Authors': authors,
-                   'Date': article.publish_date,
-                   'Text': raw_text,
-                   'Image': article.top_image
+                   'Text': raw_text
                    }
 
     return output_dict
@@ -108,15 +102,32 @@ def bbc_scrape(url):
         body_text = body_text[:-1]
     raw_text = '\n'.join([tag.text.strip() for tag in body_text])
 
-    article = Article(url)
-    article.download()
-    article.parse()
+    output_dict = {'Title': title,
+                   'Authors': authors,
+                   'Text': raw_text
+                   }
+
+    return output_dict
+
+
+def atlantic_scrape(url):
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    try:
+        title = soup.find('h1', class_='c-article-header__hed').text.strip()
+    except AttributeError:
+        return None
+
+    authors = soup.find_all('span', class_='c-byline__author')
+    authors = [author.text.strip() for author in authors]
+
+    body_text = soup.find_all('p', {'dir': 'ltr', 'data-id': False})
+    raw_text = '\n'.join([tag.text.strip() for tag in body_text])
 
     output_dict = {'Title': title,
                    'Authors': authors,
-                   'Date': article.publish_date,
-                   'Text': raw_text,
-                   'Image': article.top_image}
+                   'Text': raw_text}
 
     return output_dict
 
@@ -135,51 +146,56 @@ def is_valid_url(url):
             return False
 
 
+def default_scrape(url, data={}):
+    article = Article(url)
+    article.download()
+    article.parse()
+    article_info = {}
+    for k, v in data.items():
+        if k in ['Title', 'Authors', 'Date', 'Text', 'Image']:
+            article_info[k] = v
+    article_info['Title'] = article_info.get('Title', article.title)
+    article_info['Authors'] = article_info.get('Authors', article.authors)
+    article_info['Date'] = article_info.get('Date', article.publish_date)
+    article_info['Text'] = article_info.get('Text', article.text)
+    article_info['Image'] = article_info.get('Image', article.top_image)
+
+    return article_info
+
+
 def scrape(url):
     """
     Takes a url and returns info about the page.
     :param url: Valid url for a web article
     :type url: str
-    :return: Article title, list of authors, date published( datetime), text, and an image
+    :return: Article title, list of authors, date published (datetime), text, and an image
     :rtype: dict
     """
 
     if not is_valid_url(url):
-        output_dict = None
-    else:
-        domain = urlparse(url).netloc.split('.')[1]
+        return None
 
-        if domain == 'npr':
-            output_dict = npr_scrape(url)
-        elif domain == 'washingtonpost':
-            output_dict = wapo_scrape(url)
-        elif domain == 'bbc':
-            output_dict = bbc_scrape(url)
-        else:
-            article = Article(url)
-            try:
-                article.download()
-                article.parse()
-                output_dict = {'Title': article.title,
-                               'Authors': article.authors,
-                               'Date': article.publish_date,
-                               'Text': article.text,
-                               'Image': article.top_image}
-            except:
-                output_dict = None
+    domain = urlparse(url).netloc.split('.')[1]
 
-    if output_dict is None:
-        output_dict = {'Title': None,
-                       'Authors': None,
-                       'Date': None,
-                       'Text': None,
-                       'Image': None}
+    if domain == 'npr':
+        output_dict = npr_scrape(url)
+    elif domain == 'washingtonpost':
+        output_dict = wapo_scrape(url)
+    elif domain == 'bbc':
+        output_dict = bbc_scrape(url)
+    elif domain == 'theatlantic':
+        output_dict = atlantic_scrape(url)
+
+    if not output_dict:
+        output_dict = {}
+
+    output_dict = default_scrape(url, output_dict)
 
     return output_dict
 
 
 if __name__ == '__main__':
-    test_url = 'https://ichef.bbci.co.uk/news/1024/branded_news/15701/production/_113790878_taylor-swift-new-album-tout.jpg'
+    test_url = 'https://www.theatlantic.com/magazine/archive/2020/09/coronavirus-american-failure/614191/'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Authors"]}')
