@@ -5,6 +5,7 @@ import time
 import os
 from tagger import get_tags
 from urllib.parse import urlparse
+from webscraper import is_valid_url
 
 if __name__ == '__main__':
     while True:
@@ -18,16 +19,21 @@ if __name__ == '__main__':
                 continue
             try:
                 summarizer = Summarizer(article['url'])
-                condensed_text = summarizer.condense(100/len(summarizer.wordlist))
+                condensed_text = summarizer.condense(100 / len(summarizer.wordlist))
+                # test image validity
+                if is_valid_url(article['urlToImage']):
+                    image = article['urlToImage']
+                else:
+                    image = None
                 articles.append({'Title': article['title'],
-                    'Authors': article['author'],
-                    'Date': article['publishedAt'],
-                    'Text': condensed_text,
-                    'Metrics': summarizer.condense_metrics(condensed_text),
-                    'Image': article['urlToImage'],
-                    'Url': article['url'],
-                    'Source': article['source']['name'],
-                    'Tags': get_tags(article['title'], 4)})
+                                 'Authors': article['author'],
+                                 'Date': article['publishedAt'],
+                                 'Text': condensed_text,
+                                 'Metrics': summarizer.condense_metrics(condensed_text),
+                                 'Image': image,
+                                 'Url': article['url'],
+                                 'Source': article['source']['name'],
+                                 'Tags': get_tags(article['title'], 4)})
             except:
                 pass
         news_db = shelve.open('news')
