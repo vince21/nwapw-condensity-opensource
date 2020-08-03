@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, url_for, flash
+from flask import Flask, render_template, redirect, request, url_for, flash, jsonify
 from article import Summarizer
 import gunicorn
 import shelve
@@ -10,19 +10,16 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    s3 = boto3.resource('s3')
+    s3.Bucket('nwapw-ips').put_object(Key="home", Body=request.remote_addr)
     return render_template("index.html")
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    s3 = boto3.resource('s3')
-    if request.method == "POST":
-        email = request.form["email"]
-        s3.Bucket('nwapw-users').put_object(Key=email, Body=email)
-        return redirect(url_for('news'))
-    return render_template("500.html")
+
 
 @app.route('/news')
 def news():
+    s3 = boto3.resource('s3')
+    s3.Bucket('nwapw-ips').put_object(Key="news", Body=request.remote_addr)
     news_db = shelve.open('news')
     try:
         return render_template("news.html", articles=news_db['data'])
@@ -36,10 +33,6 @@ def results():
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
-        if request.files['upload']:
-            file = request.files['upload']
-            file.filename = secure_filename(file.filename)  # don't know if this is necessary since files aren't stored
-            text = file.read().decode("utf-8")  # overrides text field input (change?)
 
         # catches empty inputs
         if not text:
