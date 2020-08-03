@@ -9,15 +9,15 @@
     {% endif %}
     <form method="POST" action="/results" id="data" enctype="multipart/form-data">
       <div class="form-group">
-        <row>
+        <label for="text">Enter Text, a News Article Link, or a .txt file:</label>
+        <textarea class="form-control" rows="7" id="text" name="text" maxlength="50000" required></textarea>
+        <div class="row">
           <div class="col-sm-10">
-            <label for="text">Enter Text, a News Article Link, or a .txt file:</label>
           </div>
           <div class="col-sm-2">
-          <input class="input-sm float-right" type="file" id="upload" name="upload" accept="text/*">
+            <input class="input-sm" type="file" id="upload" name="upload" accept="text/*">
           </div>
-        <row>
-        <textarea class="form-control" rows="7" id="text" name="text" maxlength="50000" required></textarea>
+        </div>
       </div>
       <div class="alert alert-danger" id="text-too-long" style="display: none;">
         <p>The maximum text length is 50000 characters. Try using a shorter text or splitting it up into multiple
