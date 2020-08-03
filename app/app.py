@@ -18,7 +18,9 @@ def news():
     try:
         return render_template("news.html", articles=news_db['data'])
     except KeyError:
-        return render_template('index.html', errormsg="Sorry, we're updating the newsfeed right now. Try again in a minute!")
+        return render_template('index.html', errormsg="Sorry, we're updating the newsfeed right now. Try again in a "
+                                                      "minute!")
+
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():

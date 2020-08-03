@@ -31,7 +31,7 @@ class Summarizer:
 
         self.fullText = '\n'.join(good_sentences)
 
-    def get_similarity(self, sentence, currentScore):
+    def get_similarity(self, sentence):
         """
         Takes in a sentence and returns how similar it is to another sentence
         :param sentence: element of self.sentences
@@ -43,11 +43,11 @@ class Summarizer:
 
         if index != len(self.sentences) - 1:
             scores = [fuzz.token_sort_ratio(sim, sentence) for sim in self.sentences[index + 1:]]
-            adjustedScore = -max(scores) / 100
-            if adjustedScore < -0.85:
-                return 2 * adjustedScore  # heavily decrecrement highly similar sentences
-            elif adjustedScore < -0.6:
-                return adjustedScore  # decrement the score of somewhat similar sentences
+            adjusted_score = -max(scores) / 100
+            if adjusted_score < -0.85:
+                return 2 * adjusted_score  # heavily decrement highly similar sentences
+            elif adjusted_score < -0.6:
+                return adjusted_score  # decrement the score of somewhat similar sentences
             else:
                 return 0  # ignore low levels of similarity
         else:
@@ -125,7 +125,7 @@ class Summarizer:
             score += 1 * self.weights['Sentiment']
 
         # subtracting points based on high similarity to other sentences
-        score += self.get_similarity(sentence, score) * self.weights['Similarity']
+        score += self.get_similarity(sentence) * self.weights['Similarity']
 
         # subtracting points for short sentences (with the goal of removing subtitles/similar)
         if len(words) <= 1:
@@ -270,7 +270,7 @@ class Summarizer:
         self.sentences = [sentence for paragraph in self.paragraphs for sentence in paragraph]
 
         # adds words and their lemmas and synsets to these lists
-        wordData = []
+        word_data = []
         lemmas = []
         synsets = []
 
@@ -285,13 +285,13 @@ class Summarizer:
             for word in words:
                 self.all_words.append(word)
                 if word not in string.punctuation and word not in stop_words:
-                    wordData.append(word)
+                    word_data.append(word)
                     synsets.append(lesk(words, word))
 
-        self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
+        self.wordDF = pd.DataFrame.from_dict({'Words': word_data,
                                               'Synsets': synsets})
 
-        self.wordlist = wordData
+        self.wordlist = word_data
 
         # removes "None"s from df
         self.wordDF = self.wordDF[self.wordDF['Synsets'].notnull()]
@@ -312,8 +312,6 @@ class Summarizer:
                         'Vector': 4,
                         'Sentiment': 1,
                         'Similarity': 1}
-
-
 
 
 if __name__ == '__main__':
