@@ -3,21 +3,6 @@
 {% block content %}
 
 <div class="container">
-    <form method="POST" action="/signup" id="data">
-      <div class="form-group">
-        <div class="row">
-          <div class="col-sm-10">
-            <label for="email">Sign up for our Newsletter by Entering your Address Below</label>
-            <input class="form-control" type="email" id="email" placeholder="Enter email" name="email">
-          </div>
-          <div class="col-sm-2">
-            <br>
-            <button type="submit" class="btn btn-lg">Sign Up!</button>
-          </div>
-        </div>
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-      </div>
-    </form>
     {% for article in articles %}
     <hr>
     <div class="row">
