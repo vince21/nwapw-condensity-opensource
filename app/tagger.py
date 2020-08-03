@@ -92,4 +92,4 @@ if __name__ == '__main__':
     url = 'https://www.cnn.com/2020/07/29/us/football-player-doctor-covid-concerns/index.html'
     text = scrape(url)['Title']
 
-    print(get_tags(text, 15))
+    print(get_tags(text, 5))

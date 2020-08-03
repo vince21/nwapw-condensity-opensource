@@ -1,5 +1,7 @@
 from newspaper import Article
 from urllib.parse import urlparse
+from urllib.request import urlopen
+from urllib.error import URLError
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -86,6 +88,20 @@ def wapo_scrape(url):
     return output_dict
 
 
+def is_valid_url(url):
+    valid_syntax = False
+    try:
+        parsed_url = urlparse(url)
+        valid_syntax = all([parsed_url.scheme, parsed_url.netloc])
+    except ValueError:
+        valid_syntax = False
+    if valid_syntax:
+        try:
+            return urlopen(url).getcode() == 200
+        except URLError:
+            return False
+
+
 def scrape(url):
     """
     Takes a url and returns info about the page.
@@ -95,23 +111,27 @@ def scrape(url):
     :rtype: dict
     """
 
-    domain = urlparse(url).netloc.split('.')[1]
-    if domain == 'npr':
-        output_dict = npr_scrape(url)
-    elif domain == 'washingtonpost':
-        output_dict = wapo_scrape(url)
+    if not is_valid_url(url):
+        output_dict = None
     else:
-        article = Article(url)
-        try:
-            article.download()
-            article.parse()
-            output_dict = {'Title': article.title,
-                           'Authors': article.authors,
-                           'Date': article.publish_date,
-                           'Text': article.text,
-                           'Image': article.top_image}
-        except:
-            output_dict = None
+        domain = urlparse(url).netloc.split('.')[1]
+
+        if domain == 'npr':
+            output_dict = npr_scrape(url)
+        elif domain == 'washingtonpost':
+            output_dict = wapo_scrape(url)
+        else:
+            article = Article(url)
+            try:
+                article.download()
+                article.parse()
+                output_dict = {'Title': article.title,
+                               'Authors': article.authors,
+                               'Date': article.publish_date,
+                               'Text': article.text,
+                               'Image': article.top_image}
+            except:
+                output_dict = None
 
     if output_dict is None:
         output_dict = {'Title': None,
@@ -124,7 +144,7 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.npr.org/'
+    test_url = 'https://www.google.com/'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Authors"]}')

@@ -6,9 +6,9 @@ import pandas as pd
 import string
 from urllib.parse import urlparse
 from webscraper import scrape
+from webscraper import is_valid_url
 from fuzzywuzzy import fuzz
 from gensim.models import Word2Vec
-from nltk.stem import WordNetLemmatizer
 from datetime import datetime
 import numpy as np
 
@@ -168,7 +168,7 @@ class Summarizer:
 
         # joins sentences to make text body
 
-        # list for each paragraph
+        # create list for each paragraph
         output = [[] for _ in self.paragraphs]
 
         # copies self.paragraphs to prevent destructive edits
@@ -239,7 +239,6 @@ class Summarizer:
         :param text: text input
         :type text: file or str
         """
-        self.wnl = WordNetLemmatizer()
         self.fullText = ""
 
         # attributes that can be scraped (if a link is inputted)
@@ -254,7 +253,7 @@ class Summarizer:
             with open(text) as f:
                 for line in f:
                     self.fullText += line
-        elif urlparse(text).scheme and urlparse(text).netloc:
+        elif is_valid_url(text):
             scrape_results = scrape(text)
             self.fullText = scrape_results['Text']
             self.sanitize_text()
@@ -287,11 +286,9 @@ class Summarizer:
                 self.all_words.append(word)
                 if word not in string.punctuation and word not in stop_words:
                     wordData.append(word)
-                    lemmas.append(self.wnl.lemmatize(word))
                     synsets.append(lesk(words, word))
 
         self.wordDF = pd.DataFrame.from_dict({'Words': wordData,
-                                              'Lemmas': lemmas,
                                               'Synsets': synsets})
 
         self.wordlist = wordData
