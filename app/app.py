@@ -18,7 +18,7 @@ def signup():
     if request.method == "POST":
         email = request.form["email"]
         s3.Bucket('nwapw-users').put_object(Key=email, Body=email)
-        return render_template("news.html")
+        return redirect(url_for('news'))
     return render_template("500.html")
 
 @app.route('/news')
