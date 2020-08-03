@@ -88,6 +88,39 @@ def wapo_scrape(url):
     return output_dict
 
 
+def bbc_scrape(url):
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    try:
+        title = soup.find('h1', class_='story-body__h1').text.strip()
+    except AttributeError:
+        return None
+
+    try:
+        authors = [soup.find('span', class_='byline__name').text.strip()[3:]]
+    except AttributeError:
+        authors = []
+
+    body_text = soup.find('div', class_='story-body__inner').find_all('p', recursive=False)
+    # removes ad manually (only appears on some articles)
+    if body_text[-1].text[:21] == 'Follow us on Facebook':
+        body_text = body_text[:-1]
+    raw_text = '\n'.join([tag.text.strip() for tag in body_text])
+
+    article = Article(url)
+    article.download()
+    article.parse()
+
+    output_dict = {'Title': title,
+                   'Authors': authors,
+                   'Date': article.publish_date,
+                   'Text': raw_text,
+                   'Image': article.top_image}
+
+    return output_dict
+
+
 def is_valid_url(url):
     valid_syntax = False
     try:
@@ -120,6 +153,8 @@ def scrape(url):
             output_dict = npr_scrape(url)
         elif domain == 'washingtonpost':
             output_dict = wapo_scrape(url)
+        elif domain == 'bbc':
+            output_dict = bbc_scrape(url)
         else:
             article = Article(url)
             try:
@@ -144,7 +179,7 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.google.com/'
+    test_url = 'https://ichef.bbci.co.uk/news/1024/branded_news/15701/production/_113790878_taylor-swift-new-album-tout.jpg'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Authors"]}')
