@@ -30,6 +30,8 @@ def news():
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
+    s3 = boto3.resource('s3')
+    s3.Bucket('nwapw-ips').put_object(Key="results", Body=request.remote_addr)
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
