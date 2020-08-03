@@ -3,23 +3,18 @@ from article import Summarizer
 import gunicorn
 import shelve
 from werkzeug.utils import secure_filename
-import boto3
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def home():
-    s3 = boto3.resource('s3')
-    s3.Bucket('nwapw-ips').put_object(Key="home", Body=request.remote_addr)
     return render_template("index.html")
 
 
 
 @app.route('/news')
 def news():
-    s3 = boto3.resource('s3')
-    s3.Bucket('nwapw-ips').put_object(Key="news", Body=request.remote_addr)
     news_db = shelve.open('news')
     try:
         return render_template("news.html", articles=news_db['data'])
@@ -30,8 +25,6 @@ def news():
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
-    s3 = boto3.resource('s3')
-    s3.Bucket('nwapw-ips').put_object(Key="results", Body=request.remote_addr)
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
