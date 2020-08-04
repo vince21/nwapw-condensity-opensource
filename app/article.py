@@ -1,3 +1,8 @@
+# NWAPW
+# Spencer Chang, Toby Ueno, Vincent Wilson
+# date: 8/04/20
+# description: this is the file of the Summarizer class
+
 from nltk import word_tokenize, sent_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
@@ -14,8 +19,35 @@ import numpy as np
 
 
 class Summarizer:
+    """
+    This class summarizes text inputs
+    Attributes:
+        fullText (str): the entire text input
+
+        title (str): attribute if scraping article
+        authors (str): attribute if scraping article
+        date (str): attribute if scraping article
+        image (str): attribute if scraping article
+        domain (str): attribute if scraping article
+
+        sentences ([str]): sentence tokenized full text
+        paragraphs ([str]): paragraph tokenized full text
+
+        all_words ([str]): contains all words including stop words
+        wordDF (DataFrame): contains words and their corresponding synsets
+        wordlist ([str]): list of all words - stopwords and punctuation
+
+        sia (SentimentIntensityAnalyzer): sentiment analysis object
+        sentencesDF (DataFrame): sentences and their sentiment
+
+        vec (Word2Vec): word2vec trained object
+        weights (dict): default weightages
+    """
 
     def sanitize_text(self):
+        """
+        Takes in full text and handles punctuation like parentheses
+        """
         sentences = sent_tokenize(self.fullText)
         good_sentences = []
         for sentence in sentences:
@@ -288,6 +320,7 @@ class Summarizer:
                     word_data.append(word)
                     synsets.append(lesk(words, word))
 
+        #words and corresponding synsets
         self.wordDF = pd.DataFrame.from_dict({'Words': word_data,
                                               'Synsets': synsets})
 
