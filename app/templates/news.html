@@ -14,7 +14,8 @@
         <p>{{ article["Text"] }}</p>
         <span>
             {% for tag in article["Tags"] %}
-              <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'" type="button">{{ tag }}</button>
+              <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'"
+                      type="button">{{ tag }}</button>
             {% endfor %}
         </span>
         <b><p>Condensed by {{ article["Metrics"]['Total %'] }}% ({{ article["Metrics"]['Sentences'] }} sentences,

@@ -23,34 +23,11 @@
         <p>The maximum text length is 50000 characters. Try using a shorter text or splitting it up into multiple
           requests.</p>
       </div>
-      <script type="text/javascript">
-        const textfield = document.getElementById('text');
-        textfield.oninput = function() {
-          if (this.value.length >= this.maxLength) {
-            document.getElementById('text-too-long').style.display = 'block';
-          } else {
-           document.getElementById('text-too-long').style.display = 'none';
-          }
-        };
-      </script>
       <div class="form-group">
         <label for="percent" id="percent-value">Condense to %: </label><br>
         <input type="range" min="1" max="100" value="{{
                 request.form['percent'] if request.form['percent'] else 50
                 }}" class="slider" id="percent" name="percent">
-        <script type="text/javascript">
-          const slider = document.getElementById('percent');
-          const val = document.getElementById("percent-value");
-          const setSlider = function() {
-              val.innerHTML = 'Condense to %: ' + slider.value;
-          };
-          setSlider();
-          slider.oninput = setSlider;
-          // handles BFCache ("back" button on browser)
-          $(window).bind('pageshow', function() {
-              setSlider();
-          });
-        </script>
 
       </div>
       <br>
@@ -63,23 +40,10 @@
     </form>
     <br>
   </div>
-  <script type="text/javascript">
-    $(document).ready(function(){
-
-     $("#data").submit(function(){
-       $( "#submit" ).replaceWith("<button class=\"btn btn-lg\" type=\"button\" disabled><span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span>Loading...</button>");
-     });
-
-     $('input[type="file"]').change(function(e){
-       var fileName = e.target.files[0].name;
-       var tmppath = URL.createObjectURL(e.target.files[0]);
-       $.get(tmppath, function(data) {
-           const textfield = document.getElementById('text');
-           textfield.value = data.substring(0, Math.min(data.length, textfield.maxLength));
-           textfield.dispatchEvent(new Event('input'));
-       }, 'text');
-     });
-
-    });
+  <script>
+    toggleMaxTextAlert();
+    setSliderDisplayValue();
+    setLoadingButton();
+    uploadFileToTextArea();
   </script>
 {% endblock content %}
