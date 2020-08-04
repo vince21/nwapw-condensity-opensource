@@ -1,3 +1,8 @@
+# NWAPW
+# Spencer Chang, Toby Ueno, Vincent Wilson
+# date: 8/04/20
+# description: scrapes from news sites manually or automatically
+
 from newspaper import Article
 from urllib.parse import urlparse
 from urllib.request import urlopen

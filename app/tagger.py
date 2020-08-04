@@ -1,3 +1,8 @@
+# NWAPW
+# Spencer Chang, Toby Ueno, Vincent Wilson
+# date: 8/04/20
+# description: tags articles by corpus.json
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from webscraper import scrape
 import os

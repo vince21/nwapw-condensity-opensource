@@ -1,3 +1,8 @@
+# NWAPW
+# Spencer Chang, Toby Ueno, Vincent Wilson
+# date: 8/04/20
+# description: service to condense articles on hourly basis
+
 from newsapi import NewsApiClient
 from article import Summarizer
 import shelve
@@ -7,6 +12,9 @@ from tagger import get_tags
 from urllib.parse import urlparse
 from webscraper import is_valid_url
 
+"""
+This is a service that gets the top articles from News API every hour and puts them in news.db
+"""
 if __name__ == '__main__':
     while True:
         print("Beginning Scrape...")
@@ -35,7 +43,7 @@ if __name__ == '__main__':
                                  'Source': article['source']['name'],
                                  'Tags': get_tags(article['title'], 4)})
             except:
-                pass
+                pass        #throw out any news article with a missing field
         news_db = shelve.open('news')
         news_db.clear()
         news_db['data'] = articles
