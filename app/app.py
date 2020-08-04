@@ -9,43 +9,46 @@ import gunicorn
 import shelve
 from werkzeug.utils import secure_filename
 
-
 """
 This is the flask app file. It serves html and processes requests. It is bound to a production server, gunicorn.
 """
 app = Flask(__name__)
 
-"""
-links to home page
-"""
+
 @app.route('/')
 def home():
+    """
+    links to home page
+    """
     return render_template("index.html")
 
-"""
-links to about page
-"""
+
 @app.route('/about')
 def about():
+    """
+    links to about page
+    """
     return render_template("about.html")
 
-"""
-links to newsfeed
-"""
+
 @app.route('/news')
 def news():
+    """
+    links to newsfeed
+    """
     news_db = shelve.open('news')
     try:
-        return render_template("news.html", articles=news_db['data'])       #there is data in the db
+        return render_template("news.html", articles=news_db['data'])  # there is data in the db
     except KeyError:
         return render_template('index.html', errormsg="Sorry, we're updating the newsfeed right now. Try again in a "
-                                                      "minute!")        #there is no data in the db. the aggregator is still running
+                                                      "minute!")  # there is no data in the db— aggregator still running
 
-"""
-links to results
-"""
+
 @app.route('/results', methods=['GET', 'POST'])
 def results():
+    """
+    links to results
+    """
     if request.method == 'POST':
         text = request.form['text']
         percent = request.form['percent']
@@ -67,8 +70,9 @@ def results():
             summary_text = summary.condense(percent)
             metrics = summary.condense_metrics(summary_text)
             summary_sentences = [sentence.strip() for sentence in summary_text.split('\n') if sentence.strip() != '']
-        except UnboundLocalError:       #webscraper raises this error if it is unable to scrape a website
-            return render_template('index.html', errormsg="We couldn't condense that article. Make sure it's from a news site!")
+        except UnboundLocalError:  # webscraper raises this error if it is unable to scrape a website
+            return render_template('index.html', errormsg="We couldn't condense that article. "
+                                                          "Make sure it's from a news site!")
 
         warnings = []
         # this could be an "in" statement plus a list of domains
@@ -84,18 +88,20 @@ def results():
     else:
         return render_template('index.html')
 
-"""
-links to errorhandling
-"""
+
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    links to errorhandling
+    """
     return render_template('404.html'), 404
 
-"""
-links to errorhandling
-"""
+
 @app.errorhandler(500)
 def internal_error(e):
+    """
+    links to errorhandling
+    """
     return render_template('500.html'), 500
 
 
