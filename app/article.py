@@ -349,7 +349,7 @@ class Summarizer:
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    obj = Summarizer('https://www.bbc.com/news/world-us-canada-53606918')
+    obj = Summarizer('https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans')
     condensed_text = obj.condense()
     print(condensed_text)
     print(obj.condense_metrics(condensed_text))
