@@ -18,8 +18,9 @@
   <link href="../static/css/loading.css" rel="stylesheet"/>
 
 
-  <!--custom css-->
-  <link rel="stylesheet" href="../static/css/style.css">
+  <!--custom files-->
+  <link rel="stylesheet" href="../static/css/style.css" />
+  <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 
   <!--google analytics-->
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -56,13 +57,7 @@
     </div>
   </nav>
   <script>
-    $(function () {
-        $('li').each(function() {
-            if ($(this).find('a').prop('href') == window.location.href) {
-                $(this).addClass('active');
-            }
-        });
-    });
+    tabHighlighting();
   </script>
   {% block content %}
   {% endblock content %}
