@@ -2,9 +2,10 @@ function tabHighlighting() {
   /**
    * Highlights the current location in the navbar.
    */
+
   $(function () {
-    $('li').each(function () {
-      if ($(this).find('a').prop('href') == window.location.href) {
+    $('nav').children('a').each(function () {
+      if ($(this).prop('href') == window.location.href) {
         $(this).addClass('active');
       }
     });
