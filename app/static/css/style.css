@@ -16,7 +16,7 @@ body {
 header {
   width: 100%;
   height: 300px;
-  background: linear-gradient(135deg, #95c8d8, #B6BBBE);
+  background: #95c8d8;
   text-align: center;
   position: relative;
   position: fixed;
@@ -79,6 +79,17 @@ body.sticky-header header h1 {
 button {
   background-color: #95c8d8;
   color: white;
+  border-radius: 0;
+}
+
+.btn {
+  border-radius: 0;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+}
+
+.active {
+  background-color: #e5b794;
 }
 
 #percent {
