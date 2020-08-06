@@ -113,7 +113,8 @@ input[type=range]::-webkit-slider-thumb {
   margin-top: -5.3px;
   width: 15px;
   height: 15px;
-  background: #ffcba4;
+  background: #fff;
+  border: 2px solid #003366;
   border-radius: 50px;
   cursor: pointer;
   -webkit-appearance: none;
