@@ -179,6 +179,40 @@ def atlantic_scrape(url):
     return output_dict
 
 
+def cnbc_scrape(url):
+    """
+    Takes a URL for a CNBC article and returns the page text and info.
+    :param url: CNBC article link
+    :type url: str
+    :return: Article title, list of authors, and text
+    :rtype: dict
+    """
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    try:
+        title = soup.find('h1', class_='ArticleHeader-headline').text.strip()
+    except AttributeError:
+        return None
+
+    authors = soup.find_all('a', class_='Author-authorName')
+    authors = [author.text.strip() for author in authors]
+
+    body_text = soup.find_all('div', class_='group')
+    body_text = [textgroup.find_all('p') for textgroup in body_text]
+    body_text = [paragraph for textgroup in body_text for paragraph in textgroup]
+    # gets rid of ads
+    body_text = [tag for tag in body_text if not tag.find('em') and not tag.find('strong')]
+
+    raw_text = '\n'.join([tag.text.strip() for tag in body_text])
+
+    output_dict = {'Title': title,
+                   'Authors': authors,
+                   'Text': raw_text}
+
+    return output_dict
+
+
 def is_valid_url(url):
     """
     Tests if a URL is valid by checking the syntax and the response code.
@@ -246,6 +280,8 @@ def scrape(url):
     # apply custom scrapers if possible
     domain = urlparse(url).netloc.split('.')[1]
 
+    output_dict = None
+
     if domain == 'npr':
         output_dict = npr_scrape(url)
     elif domain == 'washingtonpost':
@@ -254,6 +290,8 @@ def scrape(url):
         output_dict = bbc_scrape(url)
     elif domain == 'theatlantic':
         output_dict = atlantic_scrape(url)
+    elif domain == 'cnbc':
+        output_dict = cnbc_scrape(url)
 
     if not output_dict:
         output_dict = {}
@@ -265,7 +303,7 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.theatlantic.com/magazine/archive/2020/09/coronavirus-american-failure/614191/'
+    test_url = 'https://www.cnbc.com/2020/08/05/samsung-galaxy-note-20-announced-price-release-date.html'
     scrape_output = scrape(test_url)
     print(f'Title: {scrape_output["Title"]}')
     print(f'Authors: {scrape_output["Authors"]}')
