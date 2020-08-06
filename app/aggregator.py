@@ -3,7 +3,6 @@
 # date: 8/04/20
 # description: service to condense articles on hourly basis
 
-from newsapi import NewsApiClient
 from article import Summarizer
 import shelve
 import time
@@ -11,6 +10,7 @@ import os
 from tagger import get_tags
 from urllib.parse import urlparse
 from webscraper import is_valid_url
+import requests
 
 """
 This is a service that gets the top articles from News API every hour and puts them in news.db
@@ -18,11 +18,13 @@ This is a service that gets the top articles from News API every hour and puts t
 if __name__ == '__main__':
     while True:
         print("Beginning Scrape...")
-        newsapi = NewsApiClient(api_key='1f9393d3ba9d40c3832e87d9088b45cf')
-        top_headlines = newsapi.get_top_headlines(language='en',
-                                                  country='us')
+        url = ('http://newsapi.org/v2/top-headlines?'
+               'country=us&'
+               'apiKey=1f9393d3ba9d40c3832e87d9088b45cf')
+        response = requests.get(url)
+
         articles = []
-        for article in top_headlines['articles']:
+        for article in response.json()['articles']:
             if urlparse(article['url']).netloc == 'www.bloomberg.com':
                 continue
             try:
