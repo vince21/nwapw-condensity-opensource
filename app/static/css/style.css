@@ -2,6 +2,7 @@
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
 }
 
 body {
@@ -46,7 +47,7 @@ header nav {
   background-color: #ffcba4;
 }
 header nav a {
-  color: #fff;
+  color: #ffffff;
   display: inline-block;
   padding: 10px 15px;
   line-height: 1;
@@ -56,6 +57,7 @@ header nav a {
   border-radius: 2px;
 }
 header nav a:hover {
+  color: #ffffff;
   -moz-box-shadow: 0 0 0 1px #fff;
   -webkit-box-shadow: 0 0 0 1px #fff;
   box-shadow: 0 0 0 1px #fff;
