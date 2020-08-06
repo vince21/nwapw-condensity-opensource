@@ -13,13 +13,13 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
 
-  <!--pace-->
+  <!--pace
   <script src="{{ url_for('static', filename='js/pace.js') }}"></script>
-  <link href="../static/css/loading.css" rel="stylesheet"/>
-
+  <link href="{{ url_for('static', filename='css/pace.css') }}" rel="stylesheet"/>
+-->
 
   <!--custom files-->
-  <link rel="stylesheet" href="../static/css/style.css" />
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
   <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 
   <!--google analytics-->
@@ -37,14 +37,14 @@
 </head>
 
 <body>
-  <!--move inline style to custom stylesheet?-->
+  <!--move inline style to custom stylesheet?
   <a href="/" id="no-highlight" style="color: inherit; text-decoration: inherit;">
     <div class="jumbotron text-center">
       <h1>Condensity</h1>
-      <!-- LOGO GOES HERE <img src="../static/img/file-minus.svg" alt="" width="80" height="80" title="Bootstrap"> -->
       <p>summarize text instantly</p>
     </div>
   </a>
+  -->
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
       <ul class="nav navbar-nav">
