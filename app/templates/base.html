@@ -37,25 +37,18 @@
 </head>
 
 <body>
-  <!--move inline style to custom stylesheet?
-  <a href="/" id="no-highlight" style="color: inherit; text-decoration: inherit;">
-    <div class="jumbotron text-center">
-      <h1>Condensity</h1>
-      <p>summarize text instantly</p>
-    </div>
-  </a>
-  -->
-  <body>
     <header>
       <h1><b>Condensity</b></h1>
       <nav>
-        <a href="/">Condense</a>
-        <a href="/news">Newsfeed</a>
-        <a href="/about">About</a>
+          <a href="/">Condense</a>
+          <a href="/news">Newsfeed</a>
+          <a href="/about">About</a>
+        </ul>
       </nav>
     </header>
   <script>
     tabHighlighting();
+    headerClosing();
   </script>
   {% block content %}
   {% endblock content %}
