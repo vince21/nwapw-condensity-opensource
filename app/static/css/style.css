@@ -2,3 +2,7 @@ h1 {
   color: green;
   text-align: center;
 }
+
+.btn btn-lg{
+  background-image: linear-gradient(to bottom right, #0090FF, #B6BBBE);
+}
