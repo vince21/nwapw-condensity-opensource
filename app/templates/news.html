@@ -5,7 +5,7 @@
     {% for article in articles %}
     <hr>
     <div class="row">
-      <div class="col-sm-4">
+      <div class="col-sm-4" id="jinja">
         <h3><a href={{ article["Url"] }}>{{ article["Title"] }}</a></h3>
         <b>{{ article["Authors"] }}</b><br>
         <p>{{ article["Date"][0:10] }}<br>
@@ -21,7 +21,7 @@
             {{ article["Metrics"]['Words'] }} words,
             {{ article["Metrics"]['Characters'] }} characters removed)</p></b>
       </div>
-      <div class="col-sm-6">
+      <div class="col-sm-6" id="jinja">
         <br>
         <br>
         {% if article["Image"] %}
