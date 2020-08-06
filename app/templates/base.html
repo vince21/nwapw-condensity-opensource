@@ -15,9 +15,8 @@
 
   <!--pace
   <script src="{{ url_for('static', filename='js/pace.js') }}"></script>
-  <link href="{{ url_for('static', filename='css/pace.css') }}" rel="stylesheet"/>
--->
-
+  <link href="{{ url_for('static', filename='css/loading.css') }}" rel="stylesheet">
+  -->
   <!--custom files-->
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
   <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
@@ -45,17 +44,15 @@
     </div>
   </a>
   -->
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-      <ul class="nav navbar-nav">
-        <li><a class="navbar-brand" href="/">Condensity</a></li>
-        <li><a href="/news">Newsfeed</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="/about"> About</a></li>
-      </ul>
-    </div>
-  </nav>
+  <body>
+    <header>
+      <h1>Condensity</h1>
+      <nav>
+        <a href="/">Condense</a>
+        <a href="/news">Newsfeed</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
   <script>
     tabHighlighting();
   </script>
