@@ -1,35 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    {% for article in articles %}
-    <hr>
-    <div class="row">
-      <div class="col-sm-4">
-        <h3><a href={{ article["Url"] }}>{{ article["Title"] }}</a></h3>
-        <b>{{ article["Authors"] }}</b><br>
-        <p>{{ article["Date"][0:10] }}<br>
-        {{ article["Date"][11:-1] }}</p>
-        <p>{{ article["Text"] }}</p>
-        <span>
-            {% for tag in article["Tags"] %}
-              <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'"
-                      type="button">{{ tag }}</button>
-            {% endfor %}
-        </span>
-        <b><p>Condensed by {{ article["Metrics"]['Total %'] }}% ({{ article["Metrics"]['Sentences'] }} sentences,
-            {{ article["Metrics"]['Words'] }} words,
-            {{ article["Metrics"]['Characters'] }} characters removed)</p></b>
+  <div class="container">
+      {% for article in articles %}
+      <hr>
+      <div class="row">
+        <div class="col-sm-4">
+          <h3><a href={{ article["Url"] }}>{{ article["Title"] }}</a></h3>
+          <b>{{ article["Authors"] }}</b><br>
+          <p>{{ article["Date"][0:10] }}<br>
+          {{ article["Date"][11:-1] }}</p>
+          <p>{{ article["Text"] }}</p>
+          <span>
+              {% for tag in article["Tags"] %}
+                <button class="btn btn-info" onclick="location.href='https://news.google.com/search?q={{ tag }}'"
+                        type="button">{{ tag }}</button>
+              {% endfor %}
+          </span>
+          <b><p>Condensed by {{ article["Metrics"]['Total %'] }}% ({{ article["Metrics"]['Sentences'] }} sentences,
+              {{ article["Metrics"]['Words'] }} words,
+              {{ article["Metrics"]['Characters'] }} characters removed)</p></b>
+        </div>
+        <div class="col-sm-6">
+          <br>
+          <br>
+          {% if article["Image"] %}
+          <img src={{ article["Image"] }} width=700 height=auto>
+          <a href={{ article["Image"] }}>view original</a>
+          {% endif %}
+        </div>
       </div>
-      <div class="col-sm-6">
-        <br>
-        <br>
-        {% if article["Image"] %}
-        <img src={{ article["Image"] }} width=700 height=auto>
-        <a href={{ article["Image"] }}>view original</a>
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
-</div>
+      {% endfor %}
+  </div>
+  <script>
+    headerClosing();
+  </script>
 {% endblock content %}
