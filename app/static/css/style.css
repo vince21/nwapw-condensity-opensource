@@ -16,7 +16,7 @@ body {
 header {
   width: 100%;
   height: 300px;
-  background: linear-gradient(135deg, #3498db, #B6BBBE);
+  background: linear-gradient(135deg, #95c8d8, #B6BBBE);
   text-align: center;
   position: relative;
   position: fixed;
@@ -44,9 +44,7 @@ header nav {
   height: 60px;
   line-height: 60px;
   width: 100%;
-  opacity: 1;
-  z-index:99;
-  background-color: #ccccff;
+  background-color: #ffcba4;
 }
 header nav a {
   color: #ffffff;
@@ -76,4 +74,35 @@ body.sticky-header header h1 {
   -ms-transform: scale(0, 0);
   -webkit-transform: scale(0, 0);
   transform: scale(0, 0);
+}
+
+button {
+  background-color: #95c8d8;
+  color: white;
+}
+
+#percent {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d7d7d7;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+#percent:hover {
+  opacity: 1;
+}
+
+#percent::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #95c8d8;
+  cursor: pointer;
 }
