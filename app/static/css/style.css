@@ -68,7 +68,7 @@ body.sticky-header {
 }
 body.sticky-header header {
   height: 60px;
-  background-color: rgba(52, 152, 219, 0.9);
+  background-color: #95c8d8;
 }
 body.sticky-header header h1 {
   -moz-transform: scale(0, 0);
@@ -77,16 +77,17 @@ body.sticky-header header h1 {
   transform: scale(0, 0);
 }
 
-button {
+.btn {
   background-color: #95c8d8;
   color: white;
   border-radius: 0;
-}
-
-.btn {
-  border-radius: 0;
   -moz-border-radius: 0;
   -webkit-border-radius: 0;
+}
+
+.btn:active:focus, .btn:focus {
+  outline: 1px solid #003366;
+  box-shadow: none;
 }
 
 .active {
@@ -123,8 +124,4 @@ input[type=range]::-webkit-slider-thumb {
 
 #jinja {
   z-index: 1;
-}
-
-.btn btn-lg{
-  background-image: linear-gradient(to bottom right, #0090FF, #B6BBBE);
 }
