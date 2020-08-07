@@ -20,7 +20,7 @@ if __name__ == '__main__':
         print("Beginning Scrape...")
         url = ('http://newsapi.org/v2/top-headlines?'
                'country=us&'
-               'apiKey=1f9393d3ba9d40c3832e87d9088b45cf')
+               'apiKey=ENTER YOUR API KEY HERE')
         response = requests.get(url)
 
         articles = []
