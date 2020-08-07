@@ -230,7 +230,7 @@ def is_valid_url(url):
         pass
     if valid_syntax:
         try:
-            return urlopen(url).getcode() == 200
+            return requests.get(url).status_code == 200
         except URLError:
             # occurs when url can't be opened
             pass
@@ -303,10 +303,13 @@ def scrape(url):
 
 
 if __name__ == '__main__':
-    test_url = 'https://www.cnbc.com/2020/08/05/samsung-galaxy-note-20-announced-price-release-date.html'
+    test_url = 'https://www.npr.org/2020/07/20/891854646/whales-get-a-break-as-pandemic-creates-quieter-oceans'
     scrape_output = scrape(test_url)
-    print(f'Title: {scrape_output["Title"]}')
-    print(f'Authors: {scrape_output["Authors"]}')
-    print(f'Date: {scrape_output["Date"]}')
-    print(f'Text: {scrape_output["Text"]}')
-    print(f'Image: {scrape_output["Image"]}')
+    if scrape_output is None:
+        print('None')
+    else:
+        print(f'Title: {scrape_output["Title"]}')
+        print(f'Authors: {scrape_output["Authors"]}')
+        print(f'Date: {scrape_output["Date"]}')
+        print(f'Text: {scrape_output["Text"]}')
+        print(f'Image: {scrape_output["Image"]}')

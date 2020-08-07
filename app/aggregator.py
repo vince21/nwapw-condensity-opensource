@@ -34,7 +34,7 @@ if __name__ == '__main__':
                 if is_valid_url(article['urlToImage']):
                     image = article['urlToImage']
                 else:
-                    image = None
+                    continue
                 articles.append({'Title': article['title'],
                                  'Authors': article['author'],
                                  'Date': article['publishedAt'],
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                                  'Source': article['source']['name'],
                                  'Tags': get_tags(article['title'], 4)})
             except:
-                pass        #throw out any news article with a missing field
+                pass        # throw out any news article with a missing field
         news_db = shelve.open('news')
         news_db.clear()
         news_db['data'] = articles
